@@ -20,6 +20,21 @@ struct MeshUniformBlock {
 	alignas(16) glm::mat4 nMat;
 };
 
+struct UniformBufferObjectOBJ {
+	alignas(4) float amb;
+	alignas(4) float rho;
+	alignas(4) float K;
+	alignas(4) float F0;
+	alignas(4) float g;
+	alignas(4) float beta;
+	alignas(4) float emit;
+
+	alignas(16) glm::vec3 sColor;
+	alignas(16) glm::mat4 mvpMat;
+	alignas(16) glm::mat4 mMat;
+	alignas(16) glm::mat4 nMat;
+};
+
 struct OverlayUniformBlock {
 	alignas(4) float visible;
 };
@@ -27,6 +42,14 @@ struct OverlayUniformBlock {
 struct GlobalUniformBlock {
 	alignas(16) glm::vec3 DlightDir;
 	alignas(16) glm::vec3 DlightColor;
+	alignas(16) glm::vec3 AmbLightColor;
+	alignas(16) glm::vec3 eyePos;
+};
+
+struct GlobalUniformBufferObjectLight {
+	alignas(16) glm::vec3 lightPos;
+	alignas(16) glm::vec3 lightDir;
+	alignas(16) glm::vec4 lightColor;
 	alignas(16) glm::vec3 AmbLightColor;
 	alignas(16) glm::vec3 eyePos;
 };
@@ -43,60 +66,84 @@ struct VertexOverlay {
 	glm::vec2 UV;
 };
 
+/* A16 */
+/* Add the C++ datastructure for the required vertex format */
 
 
 
 // MAIN ! 
-class SlotMachine : public BaseProject {
+class A16 : public BaseProject {
 	protected:
 
 	// Current aspect ratio (used by the callback that resized the window
 	float Ar;
 
 	// Descriptor Layouts ["classes" of what will be passed to the shaders]
-	DescriptorSetLayout DSLGubo, DSLMesh, DSLOverlay;
+	DescriptorSetLayout DSLGubo, DSLMesh, DSLOverlay, DSLGuboLight, DSLObj;
+	/* A16 */
+	/* Add the variable that will contain the required Descriptor Set Layout */
+
 
 	// Vertex formats
 	VertexDescriptor VMesh;
 	VertexDescriptor VOverlay;
+	/* A16 */
+	/* Add the variable that will contain the required Vertex format definition */
 
 	// Pipelines [Shader couples]
 	Pipeline PMesh;
 	Pipeline POverlay;
+	Pipeline PObj;
+	/* A16 */
+	/* Add the variable that will contain the new pipeline */
 
 	// Models, textures and Descriptors (values assigned to the uniforms)
 	// Please note that Model objects depends on the corresponding vertex structure
-	Model<VertexMesh> MBody, MHandle, MWheel;
+	Model<VertexMesh> MBody, MHandle, MWheel, MPhone, MFloor, MBallLight, MScreen;
+	/* A16 */
+	/* Add the variable that will contain the model for the room */
 	Model<VertexOverlay> MKey, MSplash;
-	DescriptorSet DSGubo, DSBody, DSHandle, DSWheel1, DSWheel2, DSWheel3, DSKey, DSSplash;
-	Texture TBody, THandle, TWheel, TKey, TSplash;
+	DescriptorSet DSGubo, DSGuboLight, DSBody, DSHandle, DSWheel1, DSWheel2, DSWheel3, DSKey, DSSplash, DSPhone, DSFloor, DSBallLight, DSScreen;
+	/* A16 */
+	/* Add the variable that will contain the Descriptor Set for the room */	
+	Texture TBody, THandle, TWheel, TKey, TSplash, TPhone, TFloor, TBallLight, TScreen;
 	
 	// C++ storage for uniform variables
-	MeshUniformBlock uboBody, uboHandle, uboWheel1, uboWheel2, uboWheel3;
+	MeshUniformBlock uboBody, uboHandle, uboWheel1, uboWheel2, uboWheel3, uboFloor, uboBallLight;
+	UniformBufferObjectOBJ uboPhone, uboScreen;
+	/* A16 */
+	/* Add the variable that will contain the Uniform Block in slot 0, set 1 of the room */
 	GlobalUniformBlock gubo;
 	OverlayUniformBlock uboKey, uboSplash;
+	GlobalUniformBufferObjectLight guboL;
 
 	// Other application parameters
-	float CamH, CamRadius, CamPitch, CamYaw;
+	float CamH, CamRadius, CamPitch, CamYaw, LightAngle, LightHeight;
 	int gameState;
 	float HandleRot = 0.0;
 	float Wheel1Rot = 0.0;
 	float Wheel2Rot = 0.0;
 	float Wheel3Rot = 0.0;
 
+
+	int showPos;
+
+
 	// Here you set the main application parameters
 	void setWindowParameters() {
 		// window size, titile and initial background
 		windowWidth = 800;
 		windowHeight = 600;
-		windowTitle = "Slot Machine";
+		windowTitle = "A16";
     	windowResizable = GLFW_TRUE;
 		initialBackgroundColor = {0.0f, 0.005f, 0.01f, 1.0f};
 		
 		// Descriptor pool sizes
-		uniformBlocksInPool = 8;
-		texturesInPool = 7;
-		setsInPool = 8;
+		/* A16 */
+		/* Update the requirements for the size of the pool */
+		uniformBlocksInPool = 100;
+		texturesInPool = 100;
+		setsInPool = 100;
 		
 		Ar = (float)windowWidth / (float)windowHeight;
 	}
@@ -120,12 +167,25 @@ class SlotMachine : public BaseProject {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
 				});
+
+		DSLObj.init(this, {
+					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
+					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT},
+					{2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
+				});
 				
 		DSLOverlay.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
-				});				
+				});
+		/* A16 */
+		/* Init the new Data Set Layout */
+				
 		DSLGubo.init(this, {
+					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS}
+				});
+
+		DSLGuboLight.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS}
 				});
 
@@ -174,16 +234,21 @@ class SlotMachine : public BaseProject {
 				  {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(VertexOverlay, UV),
 				         sizeof(glm::vec2), UV}
 				});
+		/* A16 */
+		/* Define the new Vertex Format */
 
 		// Pipelines [Shader couples]
 		// The second parameter is the pointer to the vertex definition
 		// Third and fourth parameters are respectively the vertex and fragment shaders
 		// The last array, is a vector of pointer to the layouts of the sets that will
 		// be used in this pipeline. The first element will be set 0, and so on..
-		PMesh.init(this, &VMesh, "shaders/MeshVert.spv", "shaders/MeshFrag.spv", {&DSLGubo, &DSLMesh});
+		PMesh.init(this, &VMesh, "shaders/MeshVert.spv", "shaders/MeshFrag.spv", {&DSLGuboLight, &DSLMesh});
+		PObj.init(this, &VMesh, "shaders/CookTorrVert.spv", "shaders/CookTorrFrag.spv", {&DSLGuboLight, &DSLObj});
 		POverlay.init(this, &VOverlay, "shaders/OverlayVert.spv", "shaders/OverlayFrag.spv", {&DSLOverlay});
 		POverlay.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
  								    VK_CULL_MODE_NONE, false);
+		/* A16 */
+		/* Create the new pipeline, using shaders "VColorVert.spv" and "VColorFrag.spv" */
 
 		// Models, textures and Descriptors (values assigned to the uniforms)
 
@@ -194,7 +259,22 @@ class SlotMachine : public BaseProject {
 		MBody.init(this,   &VMesh, "Models/SlotBody.obj", OBJ);
 		MHandle.init(this, &VMesh, "Models/SlotHandle.obj", OBJ);
 		MWheel.init(this,  &VMesh, "Models/SlotWheel.obj", OBJ);
+		MPhone.init(this, &VMesh, "models/iphone_open3dmodel.com.obj", OBJ);
 
+		// createSphereMesh(MPhone.vertices, MPhone.indices);
+		// MPhone.initMesh(this, &VMesh);
+		/* A16 */
+		/* load the mesh for the room, contained in OBJ file "Room.obj" */
+		createFloor(MFloor.vertices, MFloor.indices);
+		MFloor.initMesh(this, &VMesh);
+
+		createSphereMesh(MBallLight.vertices, MBallLight.indices);
+		MBallLight.initMesh(this, &VMesh);
+
+		createScreen(MScreen.vertices, MScreen.indices, 1800.0f, 831.0f);
+		MScreen.initMesh(this, &VMesh);
+
+		
 		// Creates a mesh with direct enumeration of vertices and indices
 		MKey.vertices = {{{-0.8f, 0.6f}, {0.0f,0.0f}}, {{-0.8f, 0.95f}, {0.0f,1.0f}},
 						 {{ 0.8f, 0.6f}, {1.0f,0.0f}}, {{ 0.8f, 0.95f}, {1.0f,1.0f}}};
@@ -214,20 +294,33 @@ class SlotMachine : public BaseProject {
 		TWheel.init(this,  "textures/SlotWheel.png");
 		TKey.init(this,    "textures/PressSpace.png");
 		TSplash.init(this, "textures/SplashScreen.png");
+
+		TPhone.init(this, "textures/Solid_red.png");
+		TFloor.init(this, "textures/Grey.png");
+		TBallLight.init(this, "textures/Grey.png");
+		TScreen.init(this, "textures/iphone_screen.png");
 		
 		// Init local variables
 		CamH = 1.0f;
 		CamRadius = 3.0f;
 		CamPitch = glm::radians(15.f);
-		CamYaw = glm::radians(30.f);
+		CamYaw = glm::radians(0.0f);
+		LightAngle = glm::radians(0.0f);
+		LightHeight = 2.0f;
 		gameState = 0;
+
+
+		showPos = 0;
 	}
 	
 	// Here you create your pipelines and Descriptor Sets!
 	void pipelinesAndDescriptorSetsInit() {
 		// This creates a new pipeline (with the current surface), using its shaders
 		PMesh.create();
+		PObj.create();
 		POverlay.create();
+		/* A16 */
+		/* Create the new pipeline */
 		
 		// Here you define the data set
 		DSBody.init(this, &DSLMesh, {
@@ -256,6 +349,30 @@ class SlotMachine : public BaseProject {
 					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
 					{1, TEXTURE, 0, &TWheel}
 				});
+		/* A16 */
+		/* Define the data set for the room */
+		DSPhone.init(this, &DSLObj, {
+					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
+					{1, TEXTURE, 0, &TPhone},
+					{2, TEXTURE, 0, &TScreen}
+			});
+
+		DSFloor.init(this, &DSLMesh, {
+					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
+					{1, TEXTURE, 0, &TFloor}
+			});
+
+		DSBallLight.init(this, &DSLMesh, {
+					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
+					{1, TEXTURE, 0, &TBallLight}
+			});
+
+		DSScreen.init(this, &DSLObj, {
+					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
+					{1, TEXTURE, 0, &TScreen},
+					{2, TEXTURE, 0, &TScreen}
+			});
+
 		DSKey.init(this, &DSLOverlay, {
 					{0, UNIFORM, sizeof(OverlayUniformBlock), nullptr},
 					{1, TEXTURE, 0, &TKey}
@@ -267,6 +384,10 @@ class SlotMachine : public BaseProject {
 		DSGubo.init(this, &DSLGubo, {
 					{0, UNIFORM, sizeof(GlobalUniformBlock), nullptr}
 				});
+
+		DSGuboLight.init(this, &DSLGuboLight, {
+					{0, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr}
+				});
 	}
 
 	// Here you destroy your pipelines and Descriptor Sets!
@@ -274,7 +395,10 @@ class SlotMachine : public BaseProject {
 	void pipelinesAndDescriptorSetsCleanup() {
 		// Cleanup pipelines
 		PMesh.cleanup();
+		PObj.cleanup();
 		POverlay.cleanup();
+		/* A16 */
+		/* cleanup the new pipeline */
 
 		// Cleanup datasets
 		DSBody.cleanup();
@@ -282,10 +406,17 @@ class SlotMachine : public BaseProject {
 		DSWheel1.cleanup();
 		DSWheel2.cleanup();
 		DSWheel3.cleanup();
+		/* A16 */
+		/* cleanup the dataset for the room */
+		DSPhone.cleanup();
+		DSFloor.cleanup();
+		DSBallLight.cleanup();
+		DSScreen.cleanup();
 
 		DSKey.cleanup();
 		DSSplash.cleanup();
 		DSGubo.cleanup();
+		DSGuboLight.cleanup();
 	}
 
 	// Here you destroy all the Models, Texture and Desc. Set Layouts you created!
@@ -299,6 +430,10 @@ class SlotMachine : public BaseProject {
 		TWheel.cleanup();
 		TKey.cleanup();
 		TSplash.cleanup();
+		TPhone.cleanup();
+		TFloor.cleanup();
+		TBallLight.cleanup();
+		TScreen.cleanup();
 		
 		// Cleanup models
 		MBody.cleanup();
@@ -306,16 +441,30 @@ class SlotMachine : public BaseProject {
 		MWheel.cleanup();
 		MKey.cleanup();
 		MSplash.cleanup();
+		/* A16 */
+		/* Cleanup the mesh for the room */
+		MPhone.cleanup();
+		MFloor.cleanup();
+		MBallLight.cleanup();
+		MScreen.cleanup();
 		
 		// Cleanup descriptor set layouts
 		DSLMesh.cleanup();
+		DSLObj.cleanup();
 		DSLOverlay.cleanup();
+		/* A16 */
+		/* Cleanup the new Descriptor Set Layout */
 
 		DSLGubo.cleanup();
+		DSLGuboLight.cleanup();
+		
 		
 		// Destroies the pipelines
 		PMesh.destroy();		
+		PObj.destroy();
 		POverlay.destroy();
+		/* A16 */
+		/* Destroy the new pipeline */
 	}
 	
 	// Here it is the creation of the command buffer:
@@ -324,8 +473,8 @@ class SlotMachine : public BaseProject {
 	
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
 		// sets global uniforms (see below fro parameters explanation)
-		DSGubo.bind(commandBuffer, PMesh, 0, currentImage);
-
+		//DSGubo.bind(commandBuffer, PMesh, 0, currentImage);
+		DSGuboLight.bind(commandBuffer, PMesh, 0, currentImage);
 		// binds the pipeline
 		PMesh.bind(commandBuffer);
 		// For a pipeline object, this command binds the corresponing pipeline to the command buffer passed in its parameter
@@ -365,6 +514,29 @@ class SlotMachine : public BaseProject {
 		DSWheel3.bind(commandBuffer, PMesh, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(MWheel.indices.size()), 1, 0, 0, 0);
+		/* A16 */
+		/* Insert the commands to draw the room */
+
+		MFloor.bind(commandBuffer);
+		DSFloor.bind(commandBuffer, PMesh, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MFloor.indices.size()), 1, 0, 0, 0);
+
+		MBallLight.bind(commandBuffer);
+		DSBallLight.bind(commandBuffer, PMesh, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MBallLight.indices.size()), 1, 0, 0, 0);
+
+		PObj.bind(commandBuffer);
+		MPhone.bind(commandBuffer);
+		DSPhone.bind(commandBuffer, PObj, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MPhone.indices.size()), 1, 0, 0, 0);
+
+		MScreen.bind(commandBuffer);
+		DSScreen.bind(commandBuffer, PObj, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MScreen.indices.size()), 1, 0, 0, 0);
 
 		POverlay.bind(commandBuffer);
 		MKey.bind(commandBuffer);
@@ -388,6 +560,12 @@ class SlotMachine : public BaseProject {
 		
 		// Integration with the timers and the controllers
 		float deltaT;
+		
+		static auto startTime = std::chrono::high_resolution_clock::now();
+		
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>
+					(currentTime - startTime).count();
 		glm::vec3 m = glm::vec3(0.0f), r = glm::vec3(0.0f);
 		bool fire = false;
 		getSixAxis(deltaT, m, r, fire);
@@ -412,8 +590,13 @@ class SlotMachine : public BaseProject {
 		const float WheelSpeed = glm::radians(180.0f);
 		const float SymExtent = glm::radians(15.0f);	// size of one symbol on the wheel in angle rad.
 		// static variables for current angles
+		static float HandleRot = 0.0;
+		static float Wheel1Rot = 0.0;
+		static float Wheel2Rot = 0.0;
+		static float Wheel3Rot = 0.0;
 		static float TargetRot = 0.0;	// Target rotation
 
+//std::cout << gameState << "\n";	
 		switch(gameState) {		// main state machine implementation
 		  case 0: // initial state - show splash screen
 			if(handleFire) {
@@ -450,6 +633,7 @@ class SlotMachine : public BaseProject {
 			Wheel1Rot += WheelSpeed * deltaT;
 			Wheel2Rot += WheelSpeed * deltaT;
 			Wheel3Rot += WheelSpeed * deltaT;
+//std::cout << Wheel1Rot << " --- " << TargetRot << "\n";
 			if(Wheel1Rot >= TargetRot) {	// When the target rotation is reached, jump to the next state
 				gameState = 5;
 				Wheel1Rot = round(TargetRot / SymExtent) * SymExtent; // quantize position
@@ -473,29 +657,163 @@ class SlotMachine : public BaseProject {
 			}
 			break;
 		}
+
+		glm::mat4 translation = glm::mat4(1.0f);
+		glm::mat4 scaling = glm::mat4(1.0f);
+		glm::mat4 rotation = glm::mat4(1.0f);
+		glm::mat4 phoneWorld = glm::mat4(1.0f);
+
+		glm::vec3 mouse = glm::vec3(0.0f);
+		glm::vec3 arrows = glm::vec3(0.0f);
+		int Lpressed;
+		int Cpressed;
+		int Dpressed;
+		int Epressed;
+		glm::vec3 tra;
+		glm::vec3 rot;
+		static glm::vec3 currTra = glm::vec3(0.0f);
+		static glm::vec3 currRot = glm::vec3(0.0f);
+		float contRotSpeed;
+
+		float emit;
+		static float currEmit = 0.0f;
+
+		getInteraction(mouse, arrows, Lpressed, Cpressed, Dpressed, Epressed);
+		if (Lpressed && Cpressed + Dpressed + Epressed == 0) {
+			showPos = 1;
+		} else if (Cpressed && Lpressed + Dpressed + Epressed == 0) {
+			showPos = 2;
+		} else if (Dpressed && Lpressed + Cpressed + Epressed == 0) {
+			showPos = 3;
+		} else if (Epressed && Lpressed + Cpressed + Dpressed == 0) {
+			showPos = 4;
+		} else {
+			showPos = 0;
+		}
+
+		switch(showPos) {
+		  case 1:
+		  	tra.x = 0.0f;
+			tra.y = 0.5f;
+			tra.z = 0.75f;
+
+			rot.x = glm::radians(-90.0f);
+			rot.y = glm::radians(0.0f);
+			rot.z = glm::radians(0.0f);
+
+			emit = 0.0f;
+		  				
+			break;
+		  case 2:
+		 	tra.x = 0.25f;
+			tra.y = 0.0f;
+			tra.z = 1.25f;
+
+			rot.x = glm::radians(0.0f);
+			rot.y = glm::radians(180.0f);
+			rot.z = glm::radians(0.0f);
+
+			emit = 0.0f;
+			
+			break;
+		  case 3:
+			tra.x = 0.0f;
+			tra.y = 0.40f;
+			tra.z = 0.85f;
+
+
+			rot.x = glm::radians(0.0f);
+			rot.y = glm::radians(0.0f);
+			rot.z = glm::radians(0.0f);
+
+			emit = 1;
+			
+			break;
+		  case 4:
+		  	
+			break;
+		  default:
+		  	tra.x = 0.0f;
+			tra.y = 0.5f + 0.2f * sin(time);
+			tra.z = 0.0f;
+
+			rot.x = glm::radians(-20.0f);
+			rot.y = glm::radians(0.0f);
+			rot.z = glm::radians(0.0f);
+
+			emit = 0.0f;
+
+
+		}
+
+		float speedAnim = glm::radians(1.0f);
+
+		if (mouse.z != 0) {
+			currRot.y -= mouse.y * glm::radians(180.0f) * deltaT;
+			currRot.x -= mouse.x * glm::radians(180.0f) * deltaT;
+		}
+		else {
+			currRot = 0.9f * currRot + 0.1f * rot;
+		}
+
+
+		currTra = 0.9f * currTra + 0.1f * tra;
+
+		currEmit = 0.9 * currEmit + 0.1 * emit;
+
+		glm::mat4 staticRotation = 	glm::rotate(glm::mat4(1.0f), currRot.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+									glm::rotate(glm::mat4(1.0f), currRot.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+									glm::rotate(glm::mat4(1.0f), currRot.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		glm::mat4 translateToCenter = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
+
+		rotation = glm::inverse(translateToCenter) * staticRotation * translateToCenter;
+
+		translation = glm::translate(glm::mat4(1.0f), currTra);
+
+
+		scaling = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+
+		phoneWorld = translation * rotation * scaling;
+
+		/*glm::mat4 staticRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat4 continuousRotation = glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 combinedRotation = continuousRotation * staticRotation;
+
+		glm::mat4 translateToCenter = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
+		glm::mat4 floating = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f + 0.2f * sin(time), 0.0f));
+
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+
+		World = floating * glm::inverse(translateToCenter) * combinedRotation * scale * translateToCenter;*/
 		
 		// Parameters
 		// Camera FOV-y, Near Plane and Far Plane
 		const float FOVy = glm::radians(90.0f);
 		const float nearPlane = 0.1f;
 		const float farPlane = 100.0f;
-		const float rotSpeed = glm::radians(90.0f);
+		const float rotSpeed = glm::radians(180.0f);
 		const float movSpeed = 1.0f;
 		
 		CamH += m.z * movSpeed * deltaT;
 		CamRadius -= m.x * movSpeed * deltaT;
-		CamPitch -= r.x * rotSpeed * deltaT;
-		CamYaw += r.y * rotSpeed * deltaT;
+		//CamPitch -= r.x * rotSpeed * deltaT;
+		//CamYaw += r.y * rotSpeed * deltaT;
+		LightAngle += arrows.x * rotSpeed * deltaT;
+		LightHeight += arrows.y * rotSpeed * deltaT;
 		
 		glm::mat4 Prj = glm::perspective(FOVy, Ar, nearPlane, farPlane);
 		Prj[1][1] *= -1;
 		glm::vec3 camTarget = glm::vec3(0,CamH,0);
-		glm::vec3 camPos    = camTarget +
+		/*glm::vec3 camPos = camTarget +
 							  CamRadius * glm::vec3(cos(CamPitch) * sin(CamYaw),
 													sin(CamPitch),
-													cos(CamPitch) * cos(CamYaw));
+													cos(CamPitch) * cos(CamYaw));*/
+
+		glm::vec3 camPos = glm::vec3(0.0f, 1.0f, 1.5f);
 		glm::mat4 View = glm::lookAt(camPos, camTarget, glm::vec3(0,1,0));
 
+		/*
 		gubo.DlightDir = glm::normalize(glm::vec3(1, 2, 3));
 		gubo.DlightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		gubo.AmbLightColor = glm::vec3(0.1f);
@@ -507,15 +825,30 @@ class SlotMachine : public BaseProject {
 		// the second parameter is the pointer to the C++ data structure to transfer to the GPU
 		// the third parameter is its size
 		// the fourth parameter is the location inside the descriptor set of this uniform block
+		*/
 
-		glm::mat4 World = glm::mat4(1);		
+		float angle = 0.0f;
+		angle = LightAngle;
+		float lightDist = 1.5f;
+
+
+		guboL.lightPos = glm::vec3(lightDist * cos(angle), LightHeight, lightDist * sin(angle));
+		guboL.lightDir = glm::normalize(glm::vec3(-cos(angle), 2.0f-LightHeight, -sin(angle)));
+		//printf("TARGET: %f, HEIGHT: %f\t\t\tx: %f, y: %f, z: %f\n", 2.0f - LightHeight, LightHeight, guboL.lightDir.x, guboL.lightDir.y, guboL.lightDir.z);
+		guboL.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		guboL.AmbLightColor = glm::vec3(0.1f);
+		guboL.eyePos = camPos;
+
+		DSGuboLight.map(currentImage, &guboL, sizeof(guboL), 0);
+
+		glm::mat4 World = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.5f, 10.0f));
 		uboBody.amb = 1.0f; uboBody.gamma = 180.0f; uboBody.sColor = glm::vec3(1.0f);
 		uboBody.mvpMat = Prj * View * World;
 		uboBody.mMat = World;
 		uboBody.nMat = glm::inverse(glm::transpose(World));
 		DSBody.map(currentImage, &uboBody, sizeof(uboBody), 0);
 	
-		World = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.3f,0.5f,-0.15f)),
+		World = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f,0.5f,10.0f)),
 							HandleRot, glm::vec3(1,0,0));
 		uboHandle.amb = 1.0f; uboHandle.gamma = 180.0f; uboHandle.sColor = glm::vec3(1.0f);
 		uboHandle.mvpMat = Prj * View * World;
@@ -523,7 +856,7 @@ class SlotMachine : public BaseProject {
 		uboHandle.nMat = glm::inverse(glm::transpose(World));
 		DSHandle.map(currentImage, &uboHandle, sizeof(uboHandle), 0);
 	
-		World = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(-0.15f,0.93f,-0.15f)),
+		World = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f,0.93f,10.0f)),
 							Wheel1Rot, glm::vec3(1,0,0));
 		uboWheel1.amb = 1.0f; uboWheel1.gamma = 180.0f; uboWheel1.sColor = glm::vec3(1.0f);
 		uboWheel1.mvpMat = Prj * View * World;
@@ -531,7 +864,7 @@ class SlotMachine : public BaseProject {
 		uboWheel1.nMat = glm::inverse(glm::transpose(World));
 		DSWheel1.map(currentImage, &uboWheel1, sizeof(uboWheel1), 0);
 	
-		World = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.93f,-0.15f)),
+		World = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f,0.93f,10.0f)),
 							Wheel2Rot, glm::vec3(1,0,0));
 		uboWheel2.amb = 1.0f; uboWheel2.gamma = 180.0f; uboWheel2.sColor = glm::vec3(1.0f);
 		uboWheel2.mvpMat = Prj * View * World;
@@ -539,26 +872,90 @@ class SlotMachine : public BaseProject {
 		uboWheel2.nMat = glm::inverse(glm::transpose(World));
 		DSWheel2.map(currentImage, &uboWheel2, sizeof(uboWheel2), 0);
 	
-		World = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.15f,0.93f,-0.15f)),
+		World = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f,0.93f,10.0f)),
 							Wheel3Rot, glm::vec3(1,0,0));
 		uboWheel3.amb = 1.0f; uboWheel3.gamma = 180.0f; uboWheel3.sColor = glm::vec3(1.0f);
 		uboWheel3.mvpMat = Prj * View * World;
 		uboWheel3.mMat = World;
 		uboWheel3.nMat = glm::inverse(glm::transpose(World));
 		DSWheel3.map(currentImage, &uboWheel3, sizeof(uboWheel3), 0);
+		/* A16 */
+		/* fill the uniform block for the room. Identical to the one of the body of the slot machine */
+		/*World = glm::rotate(
+			glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)), glm::vec3(0.01f, 0.01f, 0.01f)),
+			time * glm::radians(30.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f));*/
+/*
+		glm::mat4 staticRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::mat4 continuousRotation = glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 combinedRotation = continuousRotation * staticRotation;
 
-		uboKey.visible = (gameState == 1) ? 1.0f : 0.0f;
+		glm::mat4 translateToCenter = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
+		glm::mat4 floating = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f + 0.2f * sin(time), 0.0f));
+
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));*/
+
+		World = phoneWorld;
+		// World = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+
+		uboPhone.amb = 1.0f; uboPhone.rho = 0.05f; uboPhone.K = 0.05f; uboPhone.F0 = 0.3f; uboPhone.g = 1.5f; uboPhone.beta = 2.0f; uboPhone.emit = 0.0f;
+		uboPhone.sColor = glm::vec3(1.0f);
+
+		uboPhone.mvpMat = Prj * View * World;
+		uboPhone.mMat = World;
+		uboPhone.nMat = glm::inverse(glm::transpose(World));
+		DSPhone.map(currentImage, &uboPhone, sizeof(uboPhone), 0);
+
+
+
+		World = glm::rotate(glm::translate(glm::scale(phoneWorld, glm::vec3(120.0f, 115.0f, 120.0f)), glm::vec3(0.01f, 0.54f, 0.05f)), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+		uboScreen.amb = 0.0f; uboScreen.rho = 0.05f; uboScreen.K = 0.0f; uboScreen.F0 = 0.3f; uboScreen.g = 1.5f; uboScreen.beta = 2.0f; uboScreen.emit = currEmit;
+		uboScreen.sColor = glm::vec3(1.0f);
+
+		uboScreen.mvpMat = Prj * View * World;
+		uboScreen.mMat = World;
+		uboScreen.nMat = glm::inverse(glm::transpose(World));
+		DSScreen.map(currentImage, &uboScreen, sizeof(uboScreen), 0);
+
+		World = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f));
+
+		uboFloor.amb = 1.0f; uboFloor.gamma = 180.0f; uboFloor.sColor = glm::vec3(1.0f);
+		uboFloor.mvpMat = Prj * View * World;
+		uboFloor.mMat = World;
+		uboFloor.nMat = glm::inverse(glm::transpose(World));
+		DSFloor.map(currentImage, &uboFloor, sizeof(uboFloor), 0);
+
+		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(LightAngle), LightHeight, lightDist * sin(LightAngle))), glm::vec3(0.05f));
+
+		uboBallLight.amb = 0.0f; uboBallLight.gamma = 180.0f; uboBallLight.sColor = glm::vec3(1.0f);
+		uboBallLight.mvpMat = Prj * View * World;
+		uboBallLight.mMat = World;
+		uboBallLight.nMat = glm::inverse(glm::transpose(World));
+		DSBallLight.map(currentImage, &uboBallLight, sizeof(uboBallLight), 0);
+
+		/* map the uniform data block to the GPU */
+
+
+		//uboKey.visible = (gameState == 1) ? 1.0f : 0.0f;
+		uboKey.visible = 0.0f;
 		DSKey.map(currentImage, &uboKey, sizeof(uboKey), 0);
 
-		uboSplash.visible = (gameState == 0) ? 1.0f : 0.0f;
+		//uboSplash.visible = (gameState == 0) ? 1.0f : 0.0f;
+		uboSplash.visible = 0.0f;
 		DSSplash.map(currentImage, &uboSplash, sizeof(uboSplash), 0);
 	}	
+
+	void createFloor(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx);
+	void createScreen(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx, float textureHeight, float textureWidth);
+	void createSphereMesh(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx);
 };
 
+#include "objectGenerator.hpp"
 
 // This is the main: probably you do not need to touch this!
 int main() {
-    SlotMachine app;
+    A16 app;
 
     try {
         app.run();

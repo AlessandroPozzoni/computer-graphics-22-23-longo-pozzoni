@@ -1770,6 +1770,42 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 			}
 		}
 	}
+
+	void getInteraction(glm::vec3 &mouse, glm::vec3 &arrows, int &Lpressed, int &Cpressed,int &Dpressed,int &Epressed) {
+
+		static double old_xpos = 0, old_ypos = 0;
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		double m_dx = xpos - old_xpos;
+		double m_dy = ypos - old_ypos;
+		old_xpos = xpos; old_ypos = ypos;
+
+		const float MOUSE_RES = 10.0f;				
+		glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
+		if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+			mouse.y = -m_dx / MOUSE_RES;
+			mouse.x = -m_dy / MOUSE_RES;
+			mouse.z = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+		}
+		
+		if(glfwGetKey(window, GLFW_KEY_LEFT)) {
+			arrows.x = -1.0f;
+		}
+		if(glfwGetKey(window, GLFW_KEY_RIGHT)) {
+			arrows.x = 1.0f;
+		}
+		if(glfwGetKey(window, GLFW_KEY_UP)) {
+			arrows.y = 1.0f;
+		}
+		if(glfwGetKey(window, GLFW_KEY_DOWN)) {
+			arrows.y = -1.0f;
+		}
+
+		Lpressed = glfwGetKey(window, GLFW_KEY_L);
+		Cpressed = glfwGetKey(window, GLFW_KEY_C);
+		Dpressed = glfwGetKey(window, GLFW_KEY_D);
+		Epressed = glfwGetKey(window, GLFW_KEY_E);
+	}
 		
 	void getSixAxis(float &deltaT, glm::vec3 &m, glm::vec3 &r, bool &fire) {
 		static auto startTime = std::chrono::high_resolution_clock::now();
@@ -1781,6 +1817,7 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		deltaT = time - lastTime;
 		lastTime = time;
 
+		/*
 		static double old_xpos = 0, old_ypos = 0;
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
@@ -1793,7 +1830,8 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 			r.y = -m_dx / MOUSE_RES;
 			r.x = -m_dy / MOUSE_RES;
-		}
+			r.z = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+		}*/
 
 		if(glfwGetKey(window, GLFW_KEY_LEFT)) {
 			r.y = -1.0f;
@@ -2469,7 +2507,7 @@ void Pipeline::init(BaseProject *bp, VertexDescriptor *vd,
  	compareOp = VK_COMPARE_OP_LESS;
  	polyModel = VK_POLYGON_MODE_FILL;
  	CM = VK_CULL_MODE_BACK_BIT;
- 	transp = false;
+ 	transp = true;
 
 	D = d;
 }
