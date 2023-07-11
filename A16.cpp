@@ -99,18 +99,19 @@ class A16 : public BaseProject {
 
 	// Models, textures and Descriptors (values assigned to the uniforms)
 	// Please note that Model objects depends on the corresponding vertex structure
-	Model<VertexMesh> MBody, MHandle, MWheel, MPhone, MFloor, MBallLight, MScreen;
+	Model<VertexMesh> MBody, MHandle, MWheel, MPhone, MFront, MScreenMesh, MCamera, MFloor, MBallLight, MScreen;
 	/* A16 */
 	/* Add the variable that will contain the model for the room */
 	Model<VertexOverlay> MKey, MSplash;
-	DescriptorSet DSGubo, DSGuboLight, DSBody, DSHandle, DSWheel1, DSWheel2, DSWheel3, DSKey, DSSplash, DSPhone, DSFloor, DSBallLight, DSScreen;
+	DescriptorSet DSGubo, DSGuboLight, DSBody, DSHandle, DSWheel1, DSWheel2, DSWheel3, DSKey, DSSplash, DSFloor, DSBallLight, DSScreen,
+					DSPhone, DSFront, DSScreenMesh, DSCamera;
 	/* A16 */
 	/* Add the variable that will contain the Descriptor Set for the room */	
-	Texture TBody, THandle, TWheel, TKey, TSplash, TPhone, TFloor, TBallLight, TScreen;
+	Texture TBody, THandle, TWheel, TKey, TSplash, TPhone, TScreenMesh, TFloor, TBallLight, TScreen;
 	
 	// C++ storage for uniform variables
 	MeshUniformBlock uboBody, uboHandle, uboWheel1, uboWheel2, uboWheel3, uboFloor, uboBallLight;
-	UniformBufferObjectOBJ uboPhone, uboScreen;
+	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera;
 	/* A16 */
 	/* Add the variable that will contain the Uniform Block in slot 0, set 1 of the room */
 	GlobalUniformBlock gubo;
@@ -259,7 +260,10 @@ class A16 : public BaseProject {
 		MBody.init(this,   &VMesh, "Models/SlotBody.obj", OBJ);
 		MHandle.init(this, &VMesh, "Models/SlotHandle.obj", OBJ);
 		MWheel.init(this,  &VMesh, "Models/SlotWheel.obj", OBJ);
-		MPhone.init(this, &VMesh, "models/iphone_open3dmodel.com.obj", OBJ);
+		MPhone.init(this, &VMesh, "models/back.obj", OBJ);
+		MFront.init(this, &VMesh, "models/front.obj", OBJ);
+		MScreenMesh.init(this, &VMesh, "models/screen.obj", OBJ);
+		MCamera.init(this, &VMesh, "models/camera.obj", OBJ);
 
 		// createSphereMesh(MPhone.vertices, MPhone.indices);
 		// MPhone.initMesh(this, &VMesh);
@@ -296,6 +300,7 @@ class A16 : public BaseProject {
 		TSplash.init(this, "textures/SplashScreen.png");
 
 		TPhone.init(this, "textures/Solid_red.png");
+		TScreenMesh.init(this, "textures/Black.png");
 		TFloor.init(this, "textures/Grey.png");
 		TBallLight.init(this, "textures/Grey.png");
 		TScreen.init(this, "textures/iphone_screen.png");
@@ -357,6 +362,24 @@ class A16 : public BaseProject {
 					{2, TEXTURE, 0, &TScreen}
 			});
 
+		DSFront.init(this, &DSLObj, {
+					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
+					{1, TEXTURE, 0, &TPhone},
+					{2, TEXTURE, 0, &TScreen}
+			});
+
+		DSScreenMesh.init(this, &DSLObj, {
+					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
+					{1, TEXTURE, 0, &TScreenMesh},
+					{2, TEXTURE, 0, &TScreen}
+			});
+		
+		DSCamera.init(this, &DSLObj, {
+					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
+					{1, TEXTURE, 0, &TPhone},
+					{2, TEXTURE, 0, &TScreen}
+			});
+
 		DSFloor.init(this, &DSLMesh, {
 					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
 					{1, TEXTURE, 0, &TFloor}
@@ -409,6 +432,9 @@ class A16 : public BaseProject {
 		/* A16 */
 		/* cleanup the dataset for the room */
 		DSPhone.cleanup();
+		DSFront.cleanup();
+		DSScreenMesh.cleanup();
+		DSCamera.cleanup();
 		DSFloor.cleanup();
 		DSBallLight.cleanup();
 		DSScreen.cleanup();
@@ -431,6 +457,7 @@ class A16 : public BaseProject {
 		TKey.cleanup();
 		TSplash.cleanup();
 		TPhone.cleanup();
+		TScreenMesh.cleanup();
 		TFloor.cleanup();
 		TBallLight.cleanup();
 		TScreen.cleanup();
@@ -444,6 +471,9 @@ class A16 : public BaseProject {
 		/* A16 */
 		/* Cleanup the mesh for the room */
 		MPhone.cleanup();
+		MFront.cleanup();
+		MScreenMesh.cleanup();
+		MCamera.cleanup();
 		MFloor.cleanup();
 		MBallLight.cleanup();
 		MScreen.cleanup();
@@ -532,6 +562,21 @@ class A16 : public BaseProject {
 		DSPhone.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MPhone.indices.size()), 1, 0, 0, 0);
+
+		MFront.bind(commandBuffer);
+		DSFront.bind(commandBuffer, PObj, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MFront.indices.size()), 1, 0, 0, 0);
+
+		MScreenMesh.bind(commandBuffer);
+		DSScreenMesh.bind(commandBuffer, PObj, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MScreenMesh.indices.size()), 1, 0, 0, 0);
+
+		MCamera.bind(commandBuffer);
+		DSCamera.bind(commandBuffer, PObj, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MCamera.indices.size()), 1, 0, 0, 0);
 
 		MScreen.bind(commandBuffer);
 		DSScreen.bind(commandBuffer, PObj, 1, currentImage);
@@ -678,6 +723,9 @@ class A16 : public BaseProject {
 		float emit;
 		static float currEmit = 0.0f;
 
+		float interSpace = 0;
+		static float currInterSpace = 0.0f;
+
 		getInteraction(mouse, arrows, Lpressed, Cpressed, Dpressed, Epressed);
 		if (Lpressed && Cpressed + Dpressed + Epressed == 0) {
 			showPos = 1;
@@ -694,10 +742,10 @@ class A16 : public BaseProject {
 		switch(showPos) {
 		  case 1:
 		  	tra.x = 0.0f;
-			tra.y = 0.5f;
-			tra.z = 0.75f;
+			tra.y = 1.0f;
+			tra.z = 0.5f;
 
-			rot.x = glm::radians(-90.0f);
+			rot.x = glm::radians(0.0f);
 			rot.y = glm::radians(0.0f);
 			rot.z = glm::radians(0.0f);
 
@@ -706,38 +754,49 @@ class A16 : public BaseProject {
 			break;
 		  case 2:
 		 	tra.x = 0.25f;
-			tra.y = 0.0f;
+			tra.y = 0.5f;
 			tra.z = 1.25f;
 
-			rot.x = glm::radians(0.0f);
-			rot.y = glm::radians(180.0f);
-			rot.z = glm::radians(0.0f);
+			rot.x = glm::radians(90.0f);
+			rot.y = glm::radians(0.0f);
+			rot.z = glm::radians(180.0f);
 
 			emit = 0.0f;
 			
 			break;
 		  case 3:
 			tra.x = 0.0f;
-			tra.y = 0.40f;
-			tra.z = 0.85f;
+			tra.y = 1.0f;
+			tra.z = 0.75f;
 
 
-			rot.x = glm::radians(0.0f);
+			rot.x = glm::radians(90.0f);
 			rot.y = glm::radians(0.0f);
 			rot.z = glm::radians(0.0f);
 
-			emit = 1;
+			emit = 1.0f;
 			
 			break;
 		  case 4:
+			tra.x = 0.0f;
+			tra.y = 1.0f;
+			tra.z = 0.0f;
+
+			rot.x = glm::radians(90.0f);
+			rot.y = glm::radians(00.0f);
+			rot.z = glm::radians(-315.0f);
+
+			emit = 1.0f;
+
+			interSpace = 200.0f;
 		  	
 			break;
 		  default:
 		  	tra.x = 0.0f;
-			tra.y = 0.5f + 0.2f * sin(time);
+			tra.y = 1.0f + 0.2f * sin(time);
 			tra.z = 0.0f;
 
-			rot.x = glm::radians(-20.0f);
+			rot.x = glm::radians(70.0f);
 			rot.y = glm::radians(0.0f);
 			rot.z = glm::radians(0.0f);
 
@@ -746,26 +805,28 @@ class A16 : public BaseProject {
 
 		}
 
-		float speedAnim = glm::radians(1.0f);
+		float speedAnim = 0.1;
 
 		if (mouse.z != 0) {
-			currRot.y -= mouse.y * glm::radians(180.0f) * deltaT;
+			currRot.z += mouse.y * glm::radians(180.0f) * deltaT;
 			currRot.x -= mouse.x * glm::radians(180.0f) * deltaT;
 		}
 		else {
-			currRot = 0.9f * currRot + 0.1f * rot;
+			currRot = (1.0f - speedAnim) * currRot + speedAnim * rot;
 		}
 
 
-		currTra = 0.9f * currTra + 0.1f * tra;
+		currTra = (1.0f - speedAnim) * currTra + speedAnim * tra;
 
-		currEmit = 0.9 * currEmit + 0.1 * emit;
+		currEmit = (1.0f - speedAnim) * currEmit + speedAnim * emit;
+
+		currInterSpace = (1.0f - speedAnim + 0.06) * currInterSpace + (speedAnim - 0.06) * interSpace;
 
 		glm::mat4 staticRotation = 	glm::rotate(glm::mat4(1.0f), currRot.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
 									glm::rotate(glm::mat4(1.0f), currRot.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
 									glm::rotate(glm::mat4(1.0f), currRot.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
-		glm::mat4 translateToCenter = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
+		glm::mat4 translateToCenter = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
 		rotation = glm::inverse(translateToCenter) * staticRotation * translateToCenter;
 
@@ -895,8 +956,8 @@ class A16 : public BaseProject {
 
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));*/
 
-		World = phoneWorld;
-		// World = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * (-0.2f), 0.0f));
+		//World = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
 
 		uboPhone.amb = 1.0f; uboPhone.rho = 0.05f; uboPhone.K = 0.05f; uboPhone.F0 = 0.3f; uboPhone.g = 1.5f; uboPhone.beta = 2.0f; uboPhone.emit = 0.0f;
 		uboPhone.sColor = glm::vec3(1.0f);
@@ -906,9 +967,43 @@ class A16 : public BaseProject {
 		uboPhone.nMat = glm::inverse(glm::transpose(World));
 		DSPhone.map(currentImage, &uboPhone, sizeof(uboPhone), 0);
 
+		
+		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f, 0.0f));
+
+		uboFront.amb = 1.0f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 1.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f;
+		uboFront.sColor = glm::vec3(1.0f);
+
+		uboFront.mvpMat = Prj * View * World;
+		uboFront.mMat = World;
+		uboFront.nMat = glm::inverse(glm::transpose(World));
+		DSFront.map(currentImage, &uboFront, sizeof(uboFront), 0);
+
+		
+		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.4f, 0.0f));
+
+		uboScreenMesh.amb = 1.0f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 1.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f;
+		uboScreenMesh.sColor = glm::vec3(1.0f);
+
+		uboScreenMesh.mvpMat = Prj * View * World;
+		uboScreenMesh.mMat = World;
+		uboScreenMesh.nMat = glm::inverse(glm::transpose(World));
+		DSScreenMesh.map(currentImage, &uboScreenMesh, sizeof(uboScreenMesh), 0);
+
+		
+		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * -0.4f, 0.0f));
+
+		uboCamera.amb = 1.0f; uboCamera.rho = 0.05f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f;
+		uboCamera.sColor = glm::vec3(1.0f);
+
+		uboCamera.mvpMat = Prj * View * World;
+		uboCamera.mMat = World;
+		uboCamera.nMat = glm::inverse(glm::transpose(World));
+		DSCamera.map(currentImage, &uboCamera, sizeof(uboCamera), 0);
 
 
-		World = glm::rotate(glm::translate(glm::scale(phoneWorld, glm::vec3(120.0f, 115.0f, 120.0f)), glm::vec3(0.01f, 0.54f, 0.05f)), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+		World = glm::scale(glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.4f + 4.0f, 0.0f)), glm::vec3(132.7f));
+		//World = glm::mat4(1.0f);
 
 		uboScreen.amb = 0.0f; uboScreen.rho = 0.05f; uboScreen.K = 0.0f; uboScreen.F0 = 0.3f; uboScreen.g = 1.5f; uboScreen.beta = 2.0f; uboScreen.emit = currEmit;
 		uboScreen.sColor = glm::vec3(1.0f);
