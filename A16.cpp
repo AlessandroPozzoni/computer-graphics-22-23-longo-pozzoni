@@ -754,10 +754,10 @@ class A16 : public BaseProject {
 		}
 
 		switch(showPos) {
-		  case 1:
+		  case 1: //lightning port
 		  	tra.x = 0.0f;
 			tra.y = 1.0f;
-			tra.z = 0.5f;
+			tra.z = 1.25f;
 
 			rot.x = glm::radians(0.0f);
 			rot.y = glm::radians(0.0f);
@@ -766,10 +766,10 @@ class A16 : public BaseProject {
 			emit = 0.0f;
 		  				
 			break;
-		  case 2:
-		 	tra.x = 0.25f;
+		  case 2: //camera
+		 	tra.x = 0.20f;
 			tra.y = 0.5f;
-			tra.z = 1.25f;
+			tra.z = 1.75f;
 
 			rot.x = glm::radians(90.0f);
 			rot.y = glm::radians(0.0f);
@@ -778,7 +778,7 @@ class A16 : public BaseProject {
 			emit = 0.0f;
 			
 			break;
-		  case 3:
+		  case 3: //display
 			tra.x = 0.0f;
 			tra.y = 1.0f;
 			tra.z = 0.75f;
@@ -791,7 +791,7 @@ class A16 : public BaseProject {
 			emit = 1.0f;
 			
 			break;
-		  case 4:
+		  case 4: //explosion
 			tra.x = 0.0f;
 			tra.y = 1.0f;
 			tra.z = 0.0f;
@@ -864,7 +864,7 @@ class A16 : public BaseProject {
 		
 		// Parameters
 		// Camera FOV-y, Near Plane and Far Plane
-		const float FOVy = glm::radians(90.0f);
+		const float FOVy = glm::radians(45.0f);
 		const float nearPlane = 0.1f;
 		const float farPlane = 100.0f;
 		const float rotSpeed = glm::radians(180.0f);
@@ -885,7 +885,7 @@ class A16 : public BaseProject {
 													sin(CamPitch),
 													cos(CamPitch) * cos(CamYaw));*/
 
-		glm::vec3 camPos = glm::vec3(0.0f, 1.0f, 1.5f);
+		glm::vec3 camPos = glm::vec3(0.0f, 1.0f, 2.5f);
 		glm::mat4 View = glm::lookAt(camPos, camTarget, glm::vec3(0,1,0));
 
 		/*
@@ -904,12 +904,15 @@ class A16 : public BaseProject {
 
 		float angle = 0.0f;
 		angle = LightAngle;
-		float lightDist = 1.5f;
+		float lightDist = 2.8f;
+
+		float offset = 0;
+		static float currOffset = 1.0f;
 
 
 		guboL.lightPos = glm::vec3(lightDist * cos(angle), LightHeight, lightDist * sin(angle));
 		//guboL.lightDir = -glm::normalize(glm::vec3(-cos(angle), LightHeight, -sin(angle)));
-		guboL.lightDir = -glm::normalize(currTra - guboL.lightPos);
+		guboL.lightDir = -glm::normalize(currTra - guboL.lightPos + currOffset);
 		//printf("TARGET: %f, HEIGHT: %f\t\t\tx: %f, y: %f, z: %f\n", 2.0f - LightHeight, LightHeight, guboL.lightDir.x, guboL.lightDir.y, guboL.lightDir.z);
 		guboL.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		guboL.AmbLightColor = glm::vec3(0.05f);
@@ -917,7 +920,7 @@ class A16 : public BaseProject {
 
 		guboL2.lightPos = glm::vec3(lightDist * cos(glm::radians(120.0f)  + LightAngle), LightHeight, lightDist * sin(glm::radians(120.0f) + LightAngle));
 		//guboL.lightDir = -glm::normalize(glm::vec3(-cos(angle), LightHeight, -sin(angle)));
-		guboL2.lightDir = -glm::normalize(currTra - guboL2.lightPos);
+		guboL2.lightDir = -glm::normalize(currTra - guboL2.lightPos + currOffset);
 		//printf("TARGET: %f, HEIGHT: %f\t\t\tx: %f, y: %f, z: %f\n", 2.0f - LightHeight, LightHeight, guboL.lightDir.x, guboL.lightDir.y, guboL.lightDir.z);
 		guboL2.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		guboL2.AmbLightColor = glm::vec3(0.05f);
@@ -925,7 +928,7 @@ class A16 : public BaseProject {
 
 		guboL3.lightPos = glm::vec3(lightDist * cos(glm::radians(240.0f)  + LightAngle), LightHeight, lightDist * sin(glm::radians(240.0f) + LightAngle));
 		//guboL.lightDir = -glm::normalize(glm::vec3(-cos(angle), LightHeight, -sin(angle)));
-		guboL3.lightDir = -glm::normalize(currTra - guboL3.lightPos);
+		guboL3.lightDir = -glm::normalize(currTra - guboL3.lightPos + currOffset);
 		//printf("TARGET: %f, HEIGHT: %f\t\t\tx: %f, y: %f, z: %f\n", 2.0f - LightHeight, LightHeight, guboL.lightDir.x, guboL.lightDir.y, guboL.lightDir.z);
 		guboL3.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		guboL3.AmbLightColor = glm::vec3(0.05f);
@@ -934,6 +937,8 @@ class A16 : public BaseProject {
 		DSGuboLight.map(currentImage, &guboL, sizeof(guboL), 0);
 		DSGuboLight.map(currentImage, &guboL2, sizeof(guboL2), 1);
 		DSGuboLight.map(currentImage, &guboL3, sizeof(guboL3), 2);
+
+		currOffset = 0.98 * currOffset + 0.02 * offset;
 
 		glm::mat4 World = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.5f, 10.0f));
 		uboBody.amb = 1.0f; uboBody.gamma = 180.0f; uboBody.sColor = glm::vec3(1.0f);
