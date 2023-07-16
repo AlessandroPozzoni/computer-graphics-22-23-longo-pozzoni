@@ -103,20 +103,21 @@ class A16 : public BaseProject {
 	/* A16 */
 	/* Add the variable that will contain the model for the room */
 	Model<VertexOverlay> MKey, MSplash;
-	DescriptorSet DSGubo, DSGuboLight, DSBody, DSHandle, DSWheel1, DSWheel2, DSWheel3, DSKey, DSSplash, DSFloor, DSBallLight, DSScreen,
+	DescriptorSet DSGubo, DSGuboLight, DSBody, DSHandle, DSWheel1, DSWheel2, DSWheel3, DSKey, DSSplash, DSFloor,
+					DSBallLight, DSBallLight2, DSScreen,
 					DSPhone, DSFront, DSScreenMesh, DSCamera;
 	/* A16 */
 	/* Add the variable that will contain the Descriptor Set for the room */	
 	Texture TBody, THandle, TWheel, TKey, TSplash, TPhone, TScreenMesh, TFloor, TBallLight, TScreen;
 	
 	// C++ storage for uniform variables
-	MeshUniformBlock uboBody, uboHandle, uboWheel1, uboWheel2, uboWheel3, uboFloor, uboBallLight;
+	MeshUniformBlock uboBody, uboHandle, uboWheel1, uboWheel2, uboWheel3, uboFloor, uboBallLight, uboBallLight2;
 	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera;
 	/* A16 */
 	/* Add the variable that will contain the Uniform Block in slot 0, set 1 of the room */
 	GlobalUniformBlock gubo;
 	OverlayUniformBlock uboKey, uboSplash;
-	GlobalUniformBufferObjectLight guboL;
+	GlobalUniformBufferObjectLight guboL, guboL2, guboL3;
 
 	// Other application parameters
 	float CamH, CamRadius, CamPitch, CamYaw, LightAngle, LightHeight;
@@ -187,7 +188,9 @@ class A16 : public BaseProject {
 				});
 
 		DSLGuboLight.init(this, {
-					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS}
+					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
+					{1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
+					{2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS}
 				});
 
 		// Vertex descriptors
@@ -390,6 +393,11 @@ class A16 : public BaseProject {
 					{1, TEXTURE, 0, &TBallLight}
 			});
 
+		DSBallLight2.init(this, &DSLMesh, {
+					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
+					{1, TEXTURE, 0, &TBallLight}
+			});
+
 		DSScreen.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
 					{1, TEXTURE, 0, &TScreen},
@@ -409,7 +417,9 @@ class A16 : public BaseProject {
 				});
 
 		DSGuboLight.init(this, &DSLGuboLight, {
-					{0, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr}
+					{0, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr},
+					{1, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr},
+					{2, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr}
 				});
 	}
 
@@ -437,6 +447,7 @@ class A16 : public BaseProject {
 		DSCamera.cleanup();
 		DSFloor.cleanup();
 		DSBallLight.cleanup();
+		DSBallLight2.cleanup();
 		DSScreen.cleanup();
 
 		DSKey.cleanup();
@@ -554,6 +565,9 @@ class A16 : public BaseProject {
 
 		MBallLight.bind(commandBuffer);
 		DSBallLight.bind(commandBuffer, PMesh, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MBallLight.indices.size()), 1, 0, 0, 0);
+		DSBallLight2.bind(commandBuffer, PMesh, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MBallLight.indices.size()), 1, 0, 0, 0);
 
@@ -894,13 +908,32 @@ class A16 : public BaseProject {
 
 
 		guboL.lightPos = glm::vec3(lightDist * cos(angle), LightHeight, lightDist * sin(angle));
-		guboL.lightDir = glm::normalize(glm::vec3(-cos(angle), 2.0f-LightHeight, -sin(angle)));
+		//guboL.lightDir = -glm::normalize(glm::vec3(-cos(angle), LightHeight, -sin(angle)));
+		guboL.lightDir = -glm::normalize(currTra - guboL.lightPos);
 		//printf("TARGET: %f, HEIGHT: %f\t\t\tx: %f, y: %f, z: %f\n", 2.0f - LightHeight, LightHeight, guboL.lightDir.x, guboL.lightDir.y, guboL.lightDir.z);
 		guboL.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		guboL.AmbLightColor = glm::vec3(0.1f);
+		guboL.AmbLightColor = glm::vec3(0.05f);
 		guboL.eyePos = camPos;
 
+		guboL2.lightPos = glm::vec3(lightDist * cos(glm::radians(120.0f)  + LightAngle), LightHeight, lightDist * sin(glm::radians(120.0f) + LightAngle));
+		//guboL.lightDir = -glm::normalize(glm::vec3(-cos(angle), LightHeight, -sin(angle)));
+		guboL2.lightDir = -glm::normalize(currTra - guboL2.lightPos);
+		//printf("TARGET: %f, HEIGHT: %f\t\t\tx: %f, y: %f, z: %f\n", 2.0f - LightHeight, LightHeight, guboL.lightDir.x, guboL.lightDir.y, guboL.lightDir.z);
+		guboL2.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		guboL2.AmbLightColor = glm::vec3(0.05f);
+		guboL2.eyePos = camPos;
+
+		guboL3.lightPos = glm::vec3(lightDist * cos(glm::radians(240.0f)  + LightAngle), LightHeight, lightDist * sin(glm::radians(240.0f) + LightAngle));
+		//guboL.lightDir = -glm::normalize(glm::vec3(-cos(angle), LightHeight, -sin(angle)));
+		guboL3.lightDir = -glm::normalize(currTra - guboL3.lightPos);
+		//printf("TARGET: %f, HEIGHT: %f\t\t\tx: %f, y: %f, z: %f\n", 2.0f - LightHeight, LightHeight, guboL.lightDir.x, guboL.lightDir.y, guboL.lightDir.z);
+		guboL3.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		guboL3.AmbLightColor = glm::vec3(0.05f);
+		guboL3.eyePos = camPos;
+
 		DSGuboLight.map(currentImage, &guboL, sizeof(guboL), 0);
+		DSGuboLight.map(currentImage, &guboL2, sizeof(guboL2), 1);
+		DSGuboLight.map(currentImage, &guboL3, sizeof(guboL3), 2);
 
 		glm::mat4 World = glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.5f, 10.0f));
 		uboBody.amb = 1.0f; uboBody.gamma = 180.0f; uboBody.sColor = glm::vec3(1.0f);
@@ -968,7 +1001,7 @@ class A16 : public BaseProject {
 		DSPhone.map(currentImage, &uboPhone, sizeof(uboPhone), 0);
 
 		
-		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f, 0.0f));
+		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.4f, 0.0f));
 
 		uboFront.amb = 1.0f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 1.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f;
 		uboFront.sColor = glm::vec3(1.0f);
@@ -979,7 +1012,7 @@ class A16 : public BaseProject {
 		DSFront.map(currentImage, &uboFront, sizeof(uboFront), 0);
 
 		
-		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.4f, 0.0f));
+		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f, 0.0f));
 
 		uboScreenMesh.amb = 1.0f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 1.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f;
 		uboScreenMesh.sColor = glm::vec3(1.0f);
@@ -1002,7 +1035,7 @@ class A16 : public BaseProject {
 
 
 
-		World = glm::scale(glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.4f + 4.0f, 0.0f)), glm::vec3(132.7f));
+		World = glm::scale(glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f + 4.0f, 0.0f)), glm::vec3(132.7f));
 		//World = glm::mat4(1.0f);
 
 		uboScreen.amb = 0.0f; uboScreen.rho = 0.05f; uboScreen.K = 0.0f; uboScreen.F0 = 0.3f; uboScreen.g = 1.5f; uboScreen.beta = 2.0f; uboScreen.emit = currEmit;
@@ -1028,6 +1061,14 @@ class A16 : public BaseProject {
 		uboBallLight.mMat = World;
 		uboBallLight.nMat = glm::inverse(glm::transpose(World));
 		DSBallLight.map(currentImage, &uboBallLight, sizeof(uboBallLight), 0);
+		
+		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(glm::radians(120.0f) + LightAngle), LightHeight, lightDist * sin(glm::radians(120.0f) + LightAngle))), glm::vec3(0.05f));
+
+		uboBallLight2.amb = 0.0f; uboBallLight2.gamma = 180.0f; uboBallLight2.sColor = glm::vec3(1.0f);
+		uboBallLight2.mvpMat = Prj * View * World;
+		uboBallLight2.mMat = World;
+		uboBallLight2.nMat = glm::inverse(glm::transpose(World));
+		DSBallLight2.map(currentImage, &uboBallLight2, sizeof(uboBallLight2), 0);
 
 		/* map the uniform data block to the GPU */
 
