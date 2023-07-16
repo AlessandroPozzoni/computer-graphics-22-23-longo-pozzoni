@@ -23,7 +23,7 @@ layout(set = 0, binding = 1) uniform GlobalUniformBufferObject2 {
 	vec3 eyePos;	
 } gubo2;
 
-layout(set = 0, binding = 1) uniform GlobalUniformBufferObject3 {
+layout(set = 0, binding = 2) uniform GlobalUniformBufferObject3 {
 	vec3 lightPos;
 	vec3 lightDir;
 	vec4 lightColor;
@@ -42,8 +42,8 @@ layout(set = 1, binding = 0) uniform UniformBufferObject {
 
 layout(set = 1, binding = 1) uniform sampler2D tex;
 
-const float beta = 2.0f;
-const float g = 3.0f;
+const float beta = 5.0f;
+const float g = 5.0f;
 
 void main() {
 	vec3 N = normalize(fragNorm);				// surface normal
@@ -58,8 +58,8 @@ void main() {
 	
 	// Write the shader here
 
-	float cosout = 0.65;
-	float cosin  = 0.80;
+	float cosout = 0.90;
+	float cosin  = 0.95;
 
 	float clamping = clamp((dot(normalize(gubo.lightPos - fragPos), gubo.lightDir) - cosout) / (cosin - cosout), 0.0f, 1.0f);
 
