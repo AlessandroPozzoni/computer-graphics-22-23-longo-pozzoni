@@ -1771,7 +1771,7 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		}
 	}
 
-	void getInteraction(glm::vec3 &mouse, glm::vec3 &arrows, int &Lpressed, int &Cpressed,int &Dpressed,int &Epressed) {
+	void getInteraction(glm::vec3 &mouse, glm::vec3 &arrows, glm::vec3 &wasd, int &Lpressed, int &Cpressed,int &Dpressed,int &Epressed) {
 
 		static double old_xpos = 0, old_ypos = 0;
 		double xpos, ypos;
@@ -1799,6 +1799,19 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		}
 		if(glfwGetKey(window, GLFW_KEY_DOWN)) {
 			arrows.y = -1.0f;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_A)) {
+			wasd.x = -1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_D)) {
+			wasd.x = 1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_W)) {
+			wasd.y = 1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_S)) {
+			wasd.y = -1.0f;
 		}
 
 		Lpressed = glfwGetKey(window, GLFW_KEY_L);

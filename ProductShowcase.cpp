@@ -69,23 +69,22 @@ class ProductShowcase : public BaseProject {
 	Pipeline PObj;
 
 	// Models, textures and Descriptors
-	Model<VertexMesh> MPhone, MFront, MScreenMesh, MCamera, MFloor, MBallLight, MScreen;
+	Model<VertexMesh> MPhone, MFront, MScreenMesh, MCamera, MFloor, MBallLight, MSpotlight, MScreen;
 
 	DescriptorSet DSGuboLight, DSFloor,
-					DSBallLight, DSBallLight2, DSBallLight3,
+					DSBallLight, DSBallLight2, DSBallLight3, DSSpotlight,
 					DSScreen, DSPhone, DSFront, DSScreenMesh, DSCamera;
 
 	Texture TPhone, TScreenMesh, TFloor, TBallLight, TScreen;
 	
 
-	MeshUniformBlock uboFloor, uboBallLight, uboBallLight2, uboBallLight3;
+	MeshUniformBlock uboFloor, uboBallLight, uboBallLight2, uboBallLight3, uboSpotlight;
 	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera;
 
-	OverlayUniformBlock uboKey, uboSplash;
 	GlobalUniformBufferObjectLight guboL, guboL2, guboL3;
 
 	// Other application parameters
-	float CamH, CamDist, CamPitch, LightHorAngle, LightVertAngle;
+	float CamH, CamDist, CamYaw, LightHorAngle, LightVertAngle;
 
 	int showPos;
 
@@ -183,6 +182,8 @@ class ProductShowcase : public BaseProject {
 		createSphereMesh(MBallLight.vertices, MBallLight.indices);
 		MBallLight.initMesh(this, &VMesh);
 
+		MSpotlight.init(this, &VMesh, "models/spotlight.obj", OBJ);
+
 		createScreen(MScreen.vertices, MScreen.indices, 1800.0f, 831.0f);
 		MScreen.initMesh(this, &VMesh);
 		
@@ -197,7 +198,7 @@ class ProductShowcase : public BaseProject {
 		// Init local variables
 		CamH = 1.0f;
 		CamDist = 2.5f;
-		CamPitch = glm::radians(15.f);
+		CamYaw = glm::radians(90.0f);
 		LightHorAngle = glm::radians(0.0f);
 		LightVertAngle = glm::radians(45.0f);
 
@@ -256,6 +257,11 @@ class ProductShowcase : public BaseProject {
 					{1, TEXTURE, 0, &TBallLight}
 			});
 
+		DSSpotlight.init(this, &DSLMesh, {
+					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
+					{1, TEXTURE, 0, &TBallLight}
+			});
+
 		DSScreen.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
 					{1, TEXTURE, 0, &TScreen},
@@ -288,6 +294,7 @@ class ProductShowcase : public BaseProject {
 		DSBallLight.cleanup();
 		DSBallLight2.cleanup();
 		DSBallLight3.cleanup();
+		DSSpotlight.cleanup();
 		DSScreen.cleanup();
 
 
@@ -314,6 +321,7 @@ class ProductShowcase : public BaseProject {
 		MCamera.cleanup();
 		MFloor.cleanup();
 		MBallLight.cleanup();
+		MSpotlight.cleanup();
 		MScreen.cleanup();
 		
 		// Cleanup descriptor set layouts
@@ -362,6 +370,10 @@ class ProductShowcase : public BaseProject {
 		DSBallLight3.bind(commandBuffer, PMesh, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MBallLight.indices.size()), 1, 0, 0, 0);
+
+
+		MSpotlight.bind(commandBuffer);
+		DSSpotlight.bind(commandBuffer, PMesh, 1, currentImage);
 		
 
 		PObj.bind(commandBuffer);
@@ -418,6 +430,7 @@ class ProductShowcase : public BaseProject {
 
 		glm::vec3 mouse = glm::vec3(0.0f);
 		glm::vec3 arrows = glm::vec3(0.0f);
+		glm::vec3 wasd = glm::vec3(0.0f);
 		int Lpressed;
 		int Cpressed;
 		int Dpressed;
@@ -434,7 +447,7 @@ class ProductShowcase : public BaseProject {
 		float interSpace = 0;
 		static float currInterSpace = 0.0f;
 
-		getInteraction(mouse, arrows, Lpressed, Cpressed, Dpressed, Epressed);
+		getInteraction(mouse, arrows, wasd, Lpressed, Cpressed, Dpressed, Epressed);
 		if (Lpressed && Cpressed + Dpressed + Epressed == 0) {
 			showPos = 1;
 		} else if (Cpressed && Lpressed + Dpressed + Epressed == 0) {
@@ -499,7 +512,7 @@ class ProductShowcase : public BaseProject {
 			interSpace = 200.0f;
 		  	
 			break;
-		  default:
+		  default: // floating
 		  	tra.x = 0.0f;
 			tra.y = 1.0f + 0.2f * sin(time);
 			tra.z = 0.0f;
@@ -571,7 +584,13 @@ class ProductShowcase : public BaseProject {
 		Prj[1][1] *= -1;
 		glm::vec3 camTarget = glm::vec3(0,CamH,0);
 
-		glm::vec3 camPos = glm::vec3(0.0f, CamH, CamDist);
+		CamH += wasd.y * movSpeed * deltaT;
+		CamYaw -= wasd.x * rotSpeed * deltaT;
+
+		glm::vec3 camPos = camTarget +
+				CamDist * glm::vec3(cos(CamYaw),
+										0.0f,
+										sin(CamYaw));
 		glm::mat4 View = glm::lookAt(camPos, camTarget, glm::vec3(0,1,0));
 
 		float lightDist = 2.8f;
