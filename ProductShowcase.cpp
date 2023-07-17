@@ -51,7 +51,7 @@ struct VertexOverlay {
 
 
 
-class A16 : public BaseProject {
+class ProductShowcase : public BaseProject {
 	protected:
 
 	float Ar;
@@ -278,8 +278,6 @@ class A16 : public BaseProject {
 		PMesh.cleanup();
 		PObj.cleanup();
 		POverlay.cleanup();
-		/* A16 */
-		/* cleanup the new pipeline */
 
 		// Cleanup datasets
 		DSPhone.cleanup();
@@ -707,7 +705,7 @@ class A16 : public BaseProject {
 
 // This is the main: probably you do not need to touch this!
 int main() {
-    A16 app;
+    ProductShowcase app;
 
     try {
         app.run();

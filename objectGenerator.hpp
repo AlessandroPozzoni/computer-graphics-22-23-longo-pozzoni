@@ -4,7 +4,7 @@
 */
 
 
-void A16::createFloor(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx) {
+void ProductShowcase::createFloor(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx) {
     vDef.push_back({{-1,0,0}, {0,1,0}, {0,0}});	// vertex 1 - Position and Normal
 	vDef.push_back({{0,0,1}, {0,1,0}, {0,0}});	// vertex 2 - Position and Normal
 	vDef.push_back({ {1,0,0}, {0,1,0}, {0,0} });
@@ -15,7 +15,7 @@ void A16::createFloor(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx
 	vIdx.push_back(1); vIdx.push_back(3); vIdx.push_back(0);
 }
 
-void A16::createScreen(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx, float textureHeight, float textureWidth) {
+void ProductShowcase::createScreen(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx, float textureHeight, float textureWidth) {
 	vDef.push_back({ {-textureWidth / textureHeight / 2, 0, -textureHeight / textureHeight / 2}, {0,1,0}, {0.0f,0.01f} });	// vertex 1 - Position and Normal
 	vDef.push_back({ {-textureWidth / textureHeight / 2, 0,textureHeight / textureHeight / 2}, {0,1,0}, {0,1} });	// vertex 2 - Position and Normal
 	vDef.push_back({ {textureWidth / textureHeight / 2, 0,textureHeight / textureHeight / 2}, {0,1,0}, {1,1} });
@@ -46,7 +46,7 @@ glm::vec2 inUV(int strip, int frag) {
 	return glm::vec2(u, v);
 }
 
-void A16::createSphereMesh(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx) {
+void ProductShowcase::createSphereMesh(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx) {
 	// The primitive built here is a sphere of radius 1, centered in the origin, on which the Mars texture is applied seamless.
 	
 	// The procedure fills array vPos with the positions of the vertices and of the normal vectors of the mesh

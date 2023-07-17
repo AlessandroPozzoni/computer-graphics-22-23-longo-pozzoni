@@ -15,8 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="A16.cpp">
+    <ClCompile Include="ProductShowcase.cpp">
       <Filter>File di risorse</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Starter.hpp">
+      <Filter>File di risorse</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
