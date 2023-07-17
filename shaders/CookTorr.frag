@@ -23,6 +23,14 @@ layout(set = 0, binding = 1) uniform GlobalUniformBufferObject2 {
     vec3 eyePos;
 } gubo2;
 
+layout(set = 0, binding = 2) uniform GlobalUniformBufferObject3 {
+    vec3 lightPos;
+    vec3 lightDir;
+    vec4 lightColor;
+    vec3 AmbLightColor;
+    vec3 eyePos;
+} gubo3;
+
 
 layout(set = 1, binding = 0) uniform UniformBufferObject {
 	float amb;
@@ -104,6 +112,7 @@ void main() {
 	outColor = clamp(
 			getColorWith(gubo.eyePos, gubo.lightDir, gubo.AmbLightColor, gubo.lightPos, gubo.lightColor) +
 			getColorWith(gubo2.eyePos, gubo2.lightDir, gubo2.AmbLightColor, gubo2.lightPos, gubo2.lightColor) +
+			getColorWith(gubo3.eyePos, gubo3.lightDir, gubo3.AmbLightColor, gubo3.lightPos, gubo3.lightColor) +
 			ME, 0.0f, 1.0f);
 
 	/*if(dot(L, N) >= 0 && dot(L2, N) >= 0) {
