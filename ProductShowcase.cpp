@@ -95,7 +95,7 @@ class ProductShowcase : public BaseProject {
 		windowHeight = 600;
 		windowTitle = "New IPhone mega power plasss";
     	windowResizable = GLFW_TRUE;
-		initialBackgroundColor = {0.0f, 0.005f, 0.01f, 1.0f};
+		initialBackgroundColor = {0.0f, 0.000f, 0.00f, 1.0f};
 		
 		// Descriptor pool sizes
 		uniformBlocksInPool = 100;
