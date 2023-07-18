@@ -199,7 +199,7 @@ class ProductShowcase : public BaseProject {
 		CamH = 1.0f;
 		CamDist = 2.5f;
 		CamYaw = glm::radians(90.0f);
-		LightHorAngle = glm::radians(0.0f);
+		LightHorAngle = glm::radians(90.0f);
 		LightVertAngle = glm::radians(45.0f);
 
 		showPos = 0;
@@ -433,7 +433,7 @@ class ProductShowcase : public BaseProject {
 		glm::vec3 wasd = glm::vec3(0.0f);
 		int Lpressed;
 		int Cpressed;
-		int Dpressed;
+		int Hpressed;
 		int Epressed;
 		glm::vec3 tra;
 		glm::vec3 rot;
@@ -447,14 +447,18 @@ class ProductShowcase : public BaseProject {
 		float interSpace = 0;
 		static float currInterSpace = 0.0f;
 
-		getInteraction(mouse, arrows, wasd, Lpressed, Cpressed, Dpressed, Epressed);
-		if (Lpressed && Cpressed + Dpressed + Epressed == 0) {
+		static float currCamYaw = glm::radians(90.0f);
+		static float currLightHorAngle = glm::radians(90.0f);
+		static float currLightVertAngle = glm::radians(50.0f);
+
+		getInteraction(mouse, arrows, wasd, Lpressed, Cpressed, Hpressed, Epressed);
+		if (Lpressed && Cpressed + Hpressed + Epressed == 0) {
 			showPos = 1;
-		} else if (Cpressed && Lpressed + Dpressed + Epressed == 0) {
+		} else if (Cpressed && Lpressed + Hpressed + Epressed == 0) {
 			showPos = 2;
-		} else if (Dpressed && Lpressed + Cpressed + Epressed == 0) {
+		} else if (Hpressed && Lpressed + Cpressed + Epressed == 0) {
 			showPos = 3;
-		} else if (Epressed && Lpressed + Cpressed + Dpressed == 0) {
+		} else if (Epressed && Lpressed + Cpressed + Hpressed == 0) {
 			showPos = 4;
 		} else {
 			showPos = 0;
@@ -578,19 +582,39 @@ class ProductShowcase : public BaseProject {
 		const float movSpeed = 1.0f;
 		
 		LightHorAngle += arrows.x * rotSpeed * deltaT;
-		LightVertAngle += arrows.y * rotSpeed * deltaT;
+		if(LightVertAngle + arrows.y * rotSpeed * deltaT <= glm::radians(80.0f) &&
+			LightVertAngle + arrows.y * rotSpeed * deltaT >= glm::radians(5.0f)) {
+			LightVertAngle += arrows.y * rotSpeed * deltaT;
+		}
+
+		currLightHorAngle = 0.9 * currLightHorAngle + 0.1 * LightHorAngle;
+		currLightVertAngle = 0.9 * currLightVertAngle + 0.1 * LightVertAngle;
 		
 		glm::mat4 Prj = glm::perspective(FOVy, Ar, nearPlane, farPlane);
 		Prj[1][1] *= -1;
 		glm::vec3 camTarget = glm::vec3(0,CamH,0);
 
 		CamH += wasd.y * movSpeed * deltaT;
-		CamYaw -= wasd.x * rotSpeed * deltaT;
+
+		if (showPos == 4 || showPos == 0) {
+			if (wasd.x != 0) {
+				CamYaw -= wasd.x * rotSpeed * deltaT;
+			}
+			else {
+				CamYaw -= rotSpeed / 5 * deltaT;
+			}
+		}
+		else {
+			CamYaw = glm::round(CamYaw / glm::radians(360.0f)) * glm::radians(360.0f) + glm::radians(90.0f);
+		}
+		
+
+		currCamYaw = 0.9 * currCamYaw + 0.1 * CamYaw;
 
 		glm::vec3 camPos = camTarget +
-				CamDist * glm::vec3(cos(CamYaw),
+				CamDist * glm::vec3(cos(currCamYaw),
 										0.0f,
-										sin(CamYaw));
+										sin(currCamYaw));
 		glm::mat4 View = glm::lookAt(camPos, camTarget, glm::vec3(0,1,0));
 
 		float lightDist = 2.8f;
@@ -600,19 +624,19 @@ class ProductShowcase : public BaseProject {
 
 		// Three spotlights
 
-		guboL.lightPos = glm::vec3(lightDist * cos(LightHorAngle) * cos(LightVertAngle), lightDist * sin(LightVertAngle), lightDist * sin(LightHorAngle) * cos(LightVertAngle));
+		guboL.lightPos = glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle));
 		guboL.lightDir = -glm::normalize(currTra - guboL.lightPos);
 		guboL.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		guboL.AmbLightColor = glm::vec3(0.05f);
 		guboL.eyePos = camPos;
 
-		guboL2.lightPos = glm::vec3(lightDist * cos(LightHorAngle + glm::radians(120.0f)) * cos(LightVertAngle), lightDist * sin(LightVertAngle), lightDist * sin(LightHorAngle + glm::radians(120.0f)) * cos(LightVertAngle));
+		guboL2.lightPos = glm::vec3(lightDist * cos(currLightHorAngle + glm::radians(120.0f)) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle + glm::radians(120.0f)) * cos(currLightVertAngle));
 		guboL2.lightDir = -glm::normalize(currTra - guboL2.lightPos);
 		guboL2.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		guboL2.AmbLightColor = glm::vec3(0.05f);
 		guboL2.eyePos = camPos;
 
-		guboL3.lightPos = glm::vec3(lightDist * cos(LightHorAngle + glm::radians(240.0f)) * cos(LightVertAngle), lightDist * sin(LightVertAngle), lightDist * sin(LightHorAngle + glm::radians(240.0f)) * cos(LightVertAngle));
+		guboL3.lightPos = glm::vec3(lightDist * cos(currLightHorAngle + glm::radians(240.0f)) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle + glm::radians(240.0f)) * cos(currLightVertAngle));
 		guboL3.lightDir = -glm::normalize(currTra - guboL3.lightPos);
 		guboL3.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		guboL3.AmbLightColor = glm::vec3(0.05f);
@@ -629,7 +653,7 @@ class ProductShowcase : public BaseProject {
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * (-0.2f), 0.0f));
 
-		uboPhone.amb = 1.0f; uboPhone.rho = 0.05f; uboPhone.K = 0.05f; uboPhone.F0 = 0.3f; uboPhone.g = 1.5f; uboPhone.beta = 2.0f; uboPhone.emit = 0.0f;
+		uboPhone.amb = 0.5f; uboPhone.rho = 0.05f; uboPhone.K = 0.05f; uboPhone.F0 = 0.3f; uboPhone.g = 1.5f; uboPhone.beta = 2.0f; uboPhone.emit = 0.0f;
 		uboPhone.sColor = glm::vec3(1.0f);
 
 		uboPhone.mvpMat = Prj * View * World;
@@ -640,7 +664,7 @@ class ProductShowcase : public BaseProject {
 		
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.4f, 0.0f));
 
-		uboFront.amb = 1.0f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 1.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f;
+		uboFront.amb = 0.5f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 1.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f;
 		uboFront.sColor = glm::vec3(1.0f);
 
 		uboFront.mvpMat = Prj * View * World;
@@ -651,7 +675,7 @@ class ProductShowcase : public BaseProject {
 		
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f, 0.0f));
 
-		uboScreenMesh.amb = 1.0f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 1.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f;
+		uboScreenMesh.amb = 0.5f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 1.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f;
 		uboScreenMesh.sColor = glm::vec3(1.0f);
 
 		uboScreenMesh.mvpMat = Prj * View * World;
@@ -662,7 +686,7 @@ class ProductShowcase : public BaseProject {
 		
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * -0.4f, 0.0f));
 
-		uboCamera.amb = 1.0f; uboCamera.rho = 0.05f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f;
+		uboCamera.amb = 0.5f; uboCamera.rho = 0.05f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f;
 		uboCamera.sColor = glm::vec3(1.0f);
 
 		uboCamera.mvpMat = Prj * View * World;
@@ -690,7 +714,7 @@ class ProductShowcase : public BaseProject {
 		uboFloor.nMat = glm::inverse(glm::transpose(World));
 		DSFloor.map(currentImage, &uboFloor, sizeof(uboFloor), 0);
 
-		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(LightHorAngle) * cos(LightVertAngle), lightDist * sin(LightVertAngle), lightDist * sin(LightHorAngle) * cos(LightVertAngle))), glm::vec3(0.05f));
+		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.05f));
 
 		uboBallLight.amb = 0.0f; uboBallLight.gamma = 180.0f; uboBallLight.sColor = glm::vec3(1.0f);
 		uboBallLight.mvpMat = Prj * View * World;
@@ -698,7 +722,7 @@ class ProductShowcase : public BaseProject {
 		uboBallLight.nMat = glm::inverse(glm::transpose(World));
 		DSBallLight.map(currentImage, &uboBallLight, sizeof(uboBallLight), 0);
 		
-		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(glm::radians(120.0f) + LightHorAngle) * cos(LightVertAngle), lightDist * sin(LightVertAngle), lightDist * sin(glm::radians(120.0f) + LightHorAngle) * cos(LightVertAngle))), glm::vec3(0.05f));
+		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(glm::radians(120.0f) + currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(glm::radians(120.0f) + currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.05f));
 
 		uboBallLight2.amb = 0.0f; uboBallLight2.gamma = 180.0f; uboBallLight2.sColor = glm::vec3(1.0f);
 		uboBallLight2.mvpMat = Prj * View * World;
@@ -706,7 +730,7 @@ class ProductShowcase : public BaseProject {
 		uboBallLight2.nMat = glm::inverse(glm::transpose(World));
 		DSBallLight2.map(currentImage, &uboBallLight2, sizeof(uboBallLight2), 0);
 
-		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(glm::radians(240.0f) + LightHorAngle) * cos(LightVertAngle), lightDist * sin(LightVertAngle), lightDist * sin(glm::radians(240.0f) + LightHorAngle) * cos(LightVertAngle))), glm::vec3(0.05f));
+		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(glm::radians(240.0f) + currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(glm::radians(240.0f) + currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.05f));
 
 		uboBallLight3.amb = 0.0f; uboBallLight3.gamma = 180.0f; uboBallLight3.sColor = glm::vec3(1.0f);
 		uboBallLight3.mvpMat = Prj * View * World;

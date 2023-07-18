@@ -1771,7 +1771,7 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		}
 	}
 
-	void getInteraction(glm::vec3 &mouse, glm::vec3 &arrows, glm::vec3 &wasd, int &Lpressed, int &Cpressed,int &Dpressed,int &Epressed) {
+	void getInteraction(glm::vec3 &mouse, glm::vec3 &arrows, glm::vec3 &wasd, int &Lpressed, int &Cpressed,int &Hpressed,int &Epressed) {
 
 		static double old_xpos = 0, old_ypos = 0;
 		double xpos, ypos;
@@ -1816,7 +1816,7 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 
 		Lpressed = glfwGetKey(window, GLFW_KEY_L);
 		Cpressed = glfwGetKey(window, GLFW_KEY_C);
-		Dpressed = glfwGetKey(window, GLFW_KEY_D);
+		Hpressed = glfwGetKey(window, GLFW_KEY_H);
 		Epressed = glfwGetKey(window, GLFW_KEY_E);
 	}
 	
