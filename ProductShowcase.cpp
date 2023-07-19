@@ -9,6 +9,12 @@ struct MeshUniformBlock {
 	alignas(16) glm::mat4 nMat;
 };
 
+struct UniformBufferObject {
+	alignas(16) glm::mat4 mvpMat;
+	alignas(16) glm::mat4 mMat;
+	alignas(16) glm::mat4 nMat;
+};
+
 struct UniformBufferObjectOBJ {
 	alignas(4) float amb;
 	alignas(4) float rho;
@@ -57,7 +63,7 @@ class ProductShowcase : public BaseProject {
 	float Ar;
 
 	// Descriptor Set Layout
-	DescriptorSetLayout DSLMesh, DSLOverlay, DSLGuboLight, DSLObj;
+	DescriptorSetLayout DSLMesh, DSLOverlay, DSLGuboLight, DSLObj, DSLSkyBox;
 
 	// Vertex Formats
 	VertexDescriptor VMesh;
@@ -67,21 +73,24 @@ class ProductShowcase : public BaseProject {
 	Pipeline PMesh;
 	Pipeline POverlay;
 	Pipeline PObj;
+	Pipeline PSkyBox;
 
 	// Models, textures and Descriptors
-	Model<VertexMesh> MPhone, MFront, MScreenMesh, MCamera, MFloor, MBallLight, MSpotlight, MScreen;
+	Model<VertexMesh> MSkyBox, MPhone, MFront, MScreenMesh, MCamera, MFloor, MBallLight, MSpotlight, MScreen;
 
-	DescriptorSet DSGuboLight, DSFloor,
+	DescriptorSet DSGuboLight, DSFloor, DSSkyBox,
 					DSBallLight, DSBallLight2, DSBallLight3, DSSpotlight,
 					DSScreen, DSPhone, DSFront, DSScreenMesh, DSCamera;
 
-	Texture TPhone, TScreenMesh, TFloor, TBallLight, TScreen;
+	Texture TPhone, TScreenMesh, TFloor, TSkyBox, TBallLight, TScreen;
 	
 
 	MeshUniformBlock uboFloor, uboBallLight, uboBallLight2, uboBallLight3, uboSpotlight;
 	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera;
 
 	GlobalUniformBufferObjectLight guboL, guboL2, guboL3;
+
+	UniformBufferObject skyBubo;
 
 	// Other application parameters
 	float CamH, CamDist, CamYaw, LightHorAngle, LightVertAngle;
@@ -137,6 +146,11 @@ class ProductShowcase : public BaseProject {
 					{2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS}
 				});
 
+		DSLSkyBox.init(this, {
+					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT},
+					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
+				  });
+
 		// Vertex descriptors
 		VMesh.init(this, {
 				  // this array contains the bindings
@@ -167,6 +181,9 @@ class ProductShowcase : public BaseProject {
 		POverlay.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
  								    VK_CULL_MODE_NONE, false);
 
+		PSkyBox.init(this, &VMesh, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", {&DSLSkyBox});
+		PSkyBox.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
+ 								    VK_CULL_MODE_BACK_BIT, false);
 
 		// Models, textures and Descriptors (values assigned to the uniforms)
 
@@ -176,6 +193,12 @@ class ProductShowcase : public BaseProject {
 		MScreenMesh.init(this, &VMesh, "models/screen.obj", OBJ);
 		MCamera.init(this, &VMesh, "models/camera.obj", OBJ);
 		
+		MSkyBox.init(this, &VMesh, "models/SkyBoxCube.obj", OBJ);
+		const char *T2fn[] = {"textures/skybox/Skybox_Right.png", "textures/skybox/Skybox_Left.png",
+							  "textures/skybox/Skybox_Top.png",   "textures/skybox/Skybox_Bottom.png",
+							  "textures/skybox/Skybox_Front.png", "textures/skybox/Skybox_Back.png"};
+		TSkyBox.initCubic(this, T2fn);
+
 		createFloor(MFloor.vertices, MFloor.indices);
 		MFloor.initMesh(this, &VMesh);
 
@@ -211,6 +234,7 @@ class ProductShowcase : public BaseProject {
 		PMesh.create();
 		PObj.create();
 		POverlay.create();
+		PSkyBox.create();
 		
 		// Here you define the data set
 		DSPhone.init(this, &DSLObj, {
@@ -241,6 +265,11 @@ class ProductShowcase : public BaseProject {
 					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
 					{1, TEXTURE, 0, &TFloor}
 			});
+
+		DSSkyBox.init(this, &DSLSkyBox, {
+					{0, UNIFORM, sizeof(UniformBufferObject), nullptr},
+					{1, TEXTURE, 0, &TSkyBox}
+				});
 
 		DSBallLight.init(this, &DSLMesh, {
 					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
@@ -284,6 +313,7 @@ class ProductShowcase : public BaseProject {
 		PMesh.cleanup();
 		PObj.cleanup();
 		POverlay.cleanup();
+		PSkyBox.cleanup();
 
 		// Cleanup datasets
 		DSPhone.cleanup();
@@ -291,6 +321,7 @@ class ProductShowcase : public BaseProject {
 		DSScreenMesh.cleanup();
 		DSCamera.cleanup();
 		DSFloor.cleanup();
+		DSSkyBox.cleanup();
 		DSBallLight.cleanup();
 		DSBallLight2.cleanup();
 		DSBallLight3.cleanup();
@@ -311,6 +342,7 @@ class ProductShowcase : public BaseProject {
 		TPhone.cleanup();
 		TScreenMesh.cleanup();
 		TFloor.cleanup();
+		TSkyBox.cleanup();
 		TBallLight.cleanup();
 		TScreen.cleanup();
 		
@@ -320,6 +352,7 @@ class ProductShowcase : public BaseProject {
 		MScreenMesh.cleanup();
 		MCamera.cleanup();
 		MFloor.cleanup();
+		MSkyBox.cleanup();
 		MBallLight.cleanup();
 		MSpotlight.cleanup();
 		MScreen.cleanup();
@@ -328,6 +361,7 @@ class ProductShowcase : public BaseProject {
 		DSLMesh.cleanup();
 		DSLObj.cleanup();
 		DSLOverlay.cleanup();
+		DSLSkyBox.cleanup();
 
 
 
@@ -338,6 +372,7 @@ class ProductShowcase : public BaseProject {
 		PMesh.destroy();		
 		PObj.destroy();
 		POverlay.destroy();
+		PSkyBox.cleanup();
 	}
 	
 	// Here it is the creation of the command buffer:
@@ -401,6 +436,12 @@ class ProductShowcase : public BaseProject {
 		DSScreen.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MScreen.indices.size()), 1, 0, 0, 0);
+
+		PSkyBox.bind(commandBuffer);
+		MSkyBox.bind(commandBuffer);
+		DSSkyBox.bind(commandBuffer, PSkyBox, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+					static_cast<uint32_t>(MSkyBox.indices.size()), 1, 0, 0, 0);
 	}
 
 	// Here is where you update the uniforms.
@@ -713,6 +754,11 @@ class ProductShowcase : public BaseProject {
 		uboFloor.mMat = World;
 		uboFloor.nMat = glm::inverse(glm::transpose(World));
 		DSFloor.map(currentImage, &uboFloor, sizeof(uboFloor), 0);
+
+		skyBubo.mvpMat = Prj * View * World;
+		skyBubo.mMat = glm::mat4(1.0f);
+		skyBubo.nMat = glm::mat4(1.0f);
+		DSSkyBox.map(currentImage, &skyBubo, sizeof(skyBubo), 0);
 
 		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.05f));
 
