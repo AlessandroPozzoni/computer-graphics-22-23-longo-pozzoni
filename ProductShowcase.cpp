@@ -380,6 +380,13 @@ class ProductShowcase : public BaseProject {
 	// with their buffers and textures
 	
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
+
+		PSkyBox.bind(commandBuffer);
+		MSkyBox.bind(commandBuffer);
+		DSSkyBox.bind(commandBuffer, PSkyBox, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+					static_cast<uint32_t>(MSkyBox.indices.size()), 1, 0, 0, 0);
+					
 		// sets global uniforms
 		DSGuboLight.bind(commandBuffer, PMesh, 0, currentImage);
 		// binds the pipeline
@@ -437,11 +444,6 @@ class ProductShowcase : public BaseProject {
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MScreen.indices.size()), 1, 0, 0, 0);
 
-		PSkyBox.bind(commandBuffer);
-		MSkyBox.bind(commandBuffer);
-		DSSkyBox.bind(commandBuffer, PSkyBox, 0, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-					static_cast<uint32_t>(MSkyBox.indices.size()), 1, 0, 0, 0);
 	}
 
 	// Here is where you update the uniforms.
