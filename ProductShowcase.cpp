@@ -76,17 +76,17 @@ class ProductShowcase : public BaseProject {
 	Pipeline PSkyBox;
 
 	// Models, textures and Descriptors
-	Model<VertexMesh> MSkyBox, MPhone, MFront, MScreenMesh, MCamera, MFloor, MBallLight, MSpotlight, MScreen;
+	Model<VertexMesh> MSkyBox, MPhone, MFront, MScreenMesh, MCamera, MChip, MFloor, MBallLight, MSpotlight, MScreen;
 
 	DescriptorSet DSGuboLight, DSFloor, DSSkyBox,
 					DSBallLight, DSBallLight2, DSBallLight3, DSSpotlight,
-					DSScreen, DSPhone, DSFront, DSScreenMesh, DSCamera;
+					DSScreen, DSPhone, DSFront, DSScreenMesh, DSCamera, DSChip;
 
-	Texture TPhone, TScreenMesh, TFloor, TSkyBox, TBallLight, TScreen;
+	Texture TPhone, TScreenMesh, TFloor, TSkyBox, TBallLight, TScreen, TChip;
 	
 
 	MeshUniformBlock uboFloor, uboBallLight, uboBallLight2, uboBallLight3, uboSpotlight;
-	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera;
+	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera, uboChip;
 
 	GlobalUniformBufferObjectLight guboL, guboL2, guboL3;
 
@@ -192,6 +192,9 @@ class ProductShowcase : public BaseProject {
 		MFront.init(this, &VMesh, "models/front.obj", OBJ);
 		MScreenMesh.init(this, &VMesh, "models/screen.obj", OBJ);
 		MCamera.init(this, &VMesh, "models/camera.obj", OBJ);
+
+		createBox(MChip.vertices, MChip.indices, 1.0f, 1.0f, 0.05f);
+		MChip.initMesh(this, &VMesh);
 		
 		MSkyBox.init(this, &VMesh, "models/SkyBoxCube.obj", OBJ);
 		const char *T2fn[] = {"textures/skybox/Skybox_Right.png", "textures/skybox/Skybox_Left.png",
@@ -217,6 +220,7 @@ class ProductShowcase : public BaseProject {
 		TFloor.init(this, "textures/Grey.png");
 		TBallLight.init(this, "textures/Grey.png");
 		TScreen.init(this, "textures/iphone_screen.png");
+		TChip.init(this, "textures/Chip.png");
 		
 		// Init local variables
 		CamH = 1.0f;
@@ -258,6 +262,12 @@ class ProductShowcase : public BaseProject {
 		DSCamera.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
 					{1, TEXTURE, 0, &TPhone},
+					{2, TEXTURE, 0, &TScreen}
+			});
+
+		DSChip.init(this, &DSLObj, {
+					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
+					{1, TEXTURE, 0, &TChip},
 					{2, TEXTURE, 0, &TScreen}
 			});
 
@@ -320,6 +330,7 @@ class ProductShowcase : public BaseProject {
 		DSFront.cleanup();
 		DSScreenMesh.cleanup();
 		DSCamera.cleanup();
+		DSChip.cleanup();
 		DSFloor.cleanup();
 		DSSkyBox.cleanup();
 		DSBallLight.cleanup();
@@ -345,12 +356,14 @@ class ProductShowcase : public BaseProject {
 		TSkyBox.cleanup();
 		TBallLight.cleanup();
 		TScreen.cleanup();
+		TChip.cleanup();
 		
 		// Cleanup models
 		MPhone.cleanup();
 		MFront.cleanup();
 		MScreenMesh.cleanup();
 		MCamera.cleanup();
+		MChip.cleanup();
 		MFloor.cleanup();
 		MSkyBox.cleanup();
 		MBallLight.cleanup();
@@ -386,7 +399,7 @@ class ProductShowcase : public BaseProject {
 		DSSkyBox.bind(commandBuffer, PSkyBox, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 					static_cast<uint32_t>(MSkyBox.indices.size()), 1, 0, 0, 0);
-					
+
 		// sets global uniforms
 		DSGuboLight.bind(commandBuffer, PMesh, 0, currentImage);
 		// binds the pipeline
@@ -438,6 +451,11 @@ class ProductShowcase : public BaseProject {
 		DSCamera.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MCamera.indices.size()), 1, 0, 0, 0);
+
+		MChip.bind(commandBuffer);
+		DSChip.bind(commandBuffer, PObj, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MChip.indices.size()), 1, 0, 0, 0);
 
 		MScreen.bind(commandBuffer);
 		DSScreen.bind(commandBuffer, PObj, 1, currentImage);
@@ -737,7 +755,15 @@ class ProductShowcase : public BaseProject {
 		uboCamera.nMat = glm::inverse(glm::transpose(World));
 		DSCamera.map(currentImage, &uboCamera, sizeof(uboCamera), 0);
 
+		World = glm::scale(phoneWorld, glm::vec3(30.0f));
 
+		uboChip.amb = 0.5f; uboChip.rho = 0.3f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 1.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f;
+		uboChip.sColor = glm::vec3(1.0f);
+
+		uboChip.mvpMat = Prj * View * World;
+		uboChip.mMat = World;
+		uboChip.nMat = glm::inverse(glm::transpose(World));
+		DSChip.map(currentImage, &uboChip, sizeof(uboChip), 0);
 
 		World = glm::scale(glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f + 4.0f, 0.0f)), glm::vec3(132.7f));
 		
@@ -790,6 +816,7 @@ class ProductShowcase : public BaseProject {
 	void createFloor(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx);
 	void createScreen(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx, float textureHeight, float textureWidth);
 	void createSphereMesh(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx);
+	void createBox(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx, float height, float width, float thickness);
 };
 
 #include "objectGenerator.hpp"

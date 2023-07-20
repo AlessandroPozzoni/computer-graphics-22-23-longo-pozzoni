@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "cmath": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "vector": "cpp"
     }
 }
