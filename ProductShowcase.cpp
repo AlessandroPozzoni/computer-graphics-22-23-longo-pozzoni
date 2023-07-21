@@ -131,8 +131,7 @@ class ProductShowcase : public BaseProject {
 
 		DSLObj.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
-					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT},
-					{2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
+					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
 				});
 				
 		DSLOverlay.init(this, {
@@ -243,32 +242,27 @@ class ProductShowcase : public BaseProject {
 		// Here you define the data set
 		DSPhone.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
-					{1, TEXTURE, 0, &TPhone},
-					{2, TEXTURE, 0, &TScreen}
+					{1, TEXTURE, 0, &TPhone}
 			});
 
 		DSFront.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
-					{1, TEXTURE, 0, &TPhone},
-					{2, TEXTURE, 0, &TScreen}
+					{1, TEXTURE, 0, &TPhone}
 			});
 
 		DSScreenMesh.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
-					{1, TEXTURE, 0, &TScreenMesh},
-					{2, TEXTURE, 0, &TScreen}
+					{1, TEXTURE, 0, &TScreenMesh}
 			});
 		
 		DSCamera.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
-					{1, TEXTURE, 0, &TPhone},
-					{2, TEXTURE, 0, &TScreen}
+					{1, TEXTURE, 0, &TPhone}
 			});
 
 		DSChip.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
-					{1, TEXTURE, 0, &TChip},
-					{2, TEXTURE, 0, &TScreen}
+					{1, TEXTURE, 0, &TChip}
 			});
 
 		DSFloor.init(this, &DSLMesh, {
@@ -303,8 +297,7 @@ class ProductShowcase : public BaseProject {
 
 		DSScreen.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
-					{1, TEXTURE, 0, &TScreen},
-					{2, TEXTURE, 0, &TScreen}
+					{1, TEXTURE, 0, &TScreen}
 			});
 
 		
@@ -338,8 +331,6 @@ class ProductShowcase : public BaseProject {
 		DSBallLight3.cleanup();
 		DSSpotlight.cleanup();
 		DSScreen.cleanup();
-
-
 
 		DSGuboLight.cleanup();
 	}

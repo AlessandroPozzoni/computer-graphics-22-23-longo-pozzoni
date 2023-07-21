@@ -47,7 +47,6 @@ layout(set = 1, binding = 0) uniform UniformBufferObject {
 } ubo;
 
 layout(set = 1, binding = 1) uniform sampler2D tex;
-layout(set = 1, binding = 2) uniform sampler2D texEmit;
 
 const float cosout = 0.65;
 const float cosin  = 0.80;
@@ -107,7 +106,7 @@ void main() {
 
     float emit = ubo.emit;
 
-    vec4 ME = texture(texEmit, fragUV).rgba * emit;
+    vec4 ME = texture(tex, fragUV).rgba * emit;
 
 	outColor = clamp(
 			getColorWith(gubo.eyePos, gubo.lightDir, gubo.AmbLightColor, gubo.lightPos, gubo.lightColor) +
