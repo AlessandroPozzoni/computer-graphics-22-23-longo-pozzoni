@@ -525,6 +525,11 @@ class ProductShowcase : public BaseProject {
 			showPos = 0;
 		}
 
+		/*
+		L: 90 35
+		C: 75 30
+		H: 90 60
+		*/
 		switch(showPos) {
 		  case 1: //lightning port
 		  	tra.x = 0.0f;
@@ -536,7 +541,10 @@ class ProductShowcase : public BaseProject {
 			rot.z = glm::radians(0.0f);
 
 			emit = 0.0f;
-		  				
+
+			LightHorAngle = glm::radians(90.0f);
+			LightVertAngle = glm::radians(35.0f);
+
 			break;
 		  case 2: //camera
 		 	tra.x = 0.20f;
@@ -549,6 +557,9 @@ class ProductShowcase : public BaseProject {
 
 			emit = 0.0f;
 			
+			LightHorAngle = glm::radians(75.0f);
+			LightVertAngle = glm::radians(30.0f);
+
 			break;
 		  case 3: //display
 			tra.x = 0.0f;
@@ -561,6 +572,9 @@ class ProductShowcase : public BaseProject {
 			rot.z = glm::radians(0.0f);
 
 			emit = 1.0f;
+
+			LightHorAngle = glm::radians(90.0f);
+			LightVertAngle = glm::radians(60.0f);
 			
 			break;
 		  case 4: //explosion
@@ -757,7 +771,7 @@ class ProductShowcase : public BaseProject {
 
 		World = glm::scale(phoneWorld, glm::vec3(30.0f));
 
-		uboChip.amb = 0.5f; uboChip.rho = 0.3f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 1.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f;
+		uboChip.amb = 0.5f; uboChip.rho = 0.2f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 1.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f;
 		uboChip.sColor = glm::vec3(1.0f);
 
 		uboChip.mvpMat = Prj * View * World;
