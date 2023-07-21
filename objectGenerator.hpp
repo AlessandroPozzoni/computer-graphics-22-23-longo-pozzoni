@@ -3,16 +3,49 @@
 	La palla di luce deve girare su una superficie sferica
 */
 
+void drawTriangle(std::vector<uint32_t>& vIdx, int v1, int v2, int v3) {
+	vIdx.push_back(v1); vIdx.push_back(v2); vIdx.push_back(v3);
+}
+
 
 void ProductShowcase::createFloor(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx) {
-    vDef.push_back({{-1,0,0}, {0,1,0}, {0,0}});	// vertex 1 - Position and Normal
-	vDef.push_back({{0,0,1}, {0,1,0}, {0,0}});	// vertex 2 - Position and Normal
-	vDef.push_back({ {1,0,0}, {0,1,0}, {0,0} });
-	vDef.push_back({ {0,0,-1}, {0,1,0}, {0,0} });
+    float theta = 1.0f;
+	int approxNum = 360.f / theta;
+	float r = 1.0f;
 
-	//vIdx.push_back(0); vIdx.push_back(1); vIdx.push_back(2);
-	vIdx.push_back(1); vIdx.push_back(2); vIdx.push_back(3);
-	vIdx.push_back(1); vIdx.push_back(3); vIdx.push_back(0);
+	vDef.push_back({ {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f,0.0f} }); // 0
+	vDef.push_back({ {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f,0.0f}});  // 1
+
+
+	for (int j = 0; j < 2; j++) {
+		for (int i = 0; i < approxNum; i++) {
+
+			glm::vec3 pos = glm::vec3(r * cos(glm::radians(i * theta)), -1.0f + j * 2.0f, r * sin(glm::radians(i * theta)));
+
+			glm::vec3 normV = glm::vec3(0.0f, -1.0f + j * (2.0f), 0.0f);
+			glm::vec3 normH = glm::vec3(r * cos(glm::radians(i * theta)), 0.0f, r * sin(glm::radians(i * theta)));
+			normH = normH / glm::length(normH);
+
+			vDef.push_back({ pos, normV, {0.0f,0.0f} });
+			vDef.push_back({ pos, normH, {0.0f,0.0f} });
+		}
+	}
+	
+
+	// Fill the array vIdx with the indices of the vertices of the triangles
+	for (int j = 0; j < 2; j++) {
+		for (int i = 0; i < approxNum; i++) {
+
+			drawTriangle(vIdx, 2 * j * approxNum + (2 * i) + 2, j, 2 * j * approxNum + (2 * ((i + 1) % approxNum)) + 2);
+
+			if (j == 0) {
+				drawTriangle(vIdx, 2 * ((i + 1) % approxNum) + 3, 2 * i + 3, 2 * approxNum + 2 * i + 3);
+			}
+			if (j == 1) {
+				drawTriangle(vIdx, 2 * ((i + 1) % approxNum) + 3, 2 * approxNum + 2 * i + 3, 2 * approxNum + 2 * ((i + 1) % approxNum) + 3);
+			}
+		}
+	}
 }
 
 void ProductShowcase::createScreen(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx, float textureHeight, float textureWidth) {
@@ -24,11 +57,6 @@ void ProductShowcase::createScreen(std::vector<VertexMesh>& vDef, std::vector<ui
 	//vIdx.push_back(0); vIdx.push_back(1); vIdx.push_back(2);
 	vIdx.push_back(1); vIdx.push_back(2); vIdx.push_back(3);
 	vIdx.push_back(1); vIdx.push_back(3); vIdx.push_back(0);
-}
-
-
-void drawTriangle(std::vector<uint32_t>& vIdx, int v1, int v2, int v3) {
-	vIdx.push_back(v1); vIdx.push_back(v2); vIdx.push_back(v3);
 }
 
 #define M_PI 3.141595f

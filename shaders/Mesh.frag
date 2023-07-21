@@ -72,7 +72,11 @@ void main() {
 	vec3 Spec = vec3(pow(clamp(dot(N, normalize(L + V)),0.0,1.0), ubo.gamma));
 	vec3 Ambient = LA * MA;
 
-	vec3 ME = vec3(1.0f) - ubo.amb; // Texture2 se devono emettere
+	vec3 ME = vec3(0.0f);
+
+	if(Ambient == vec3(0.0f)) {
+		ME = vec3(1.0f);
+	}
 
 
 

@@ -789,13 +789,15 @@ class ProductShowcase : public BaseProject {
 		uboScreen.nMat = glm::inverse(glm::transpose(World));
 		DSScreen.map(currentImage, &uboScreen, sizeof(uboScreen), 0);
 
-		World = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f));
+		World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 
-		uboFloor.amb = 1.0f; uboFloor.gamma = 180.0f; uboFloor.sColor = glm::vec3(1.0f);
+		uboFloor.amb = 0.1f; uboFloor.gamma = 60.0f; uboFloor.sColor = glm::vec3(1.0f);
 		uboFloor.mvpMat = Prj * View * World;
 		uboFloor.mMat = World;
 		uboFloor.nMat = glm::inverse(glm::transpose(World));
 		DSFloor.map(currentImage, &uboFloor, sizeof(uboFloor), 0);
+
+		World = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f));
 
 		skyBubo.mvpMat = Prj * View * World;
 		skyBubo.mMat = glm::mat4(1.0f);
