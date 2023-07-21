@@ -493,7 +493,7 @@ class ProductShowcase : public BaseProject {
 		static glm::vec3 currRot = glm::vec3(0.0f);
 		float contRotSpeed;
 
-		float emit;
+		float emit = 0;
 		static float currEmit = 0.0f;
 
 		float interSpace = 0;
@@ -531,8 +531,6 @@ class ProductShowcase : public BaseProject {
 			rot.y = glm::radians(0.0f);
 			rot.z = glm::radians(0.0f);
 
-			emit = 0.0f;
-
 			LightHorAngle = glm::radians(90.0f);
 			LightVertAngle = glm::radians(35.0f);
 
@@ -545,8 +543,6 @@ class ProductShowcase : public BaseProject {
 			rot.x = glm::radians(90.0f);
 			rot.y = glm::radians(0.0f);
 			rot.z = glm::radians(180.0f);
-
-			emit = 0.0f;
 			
 			LightHorAngle = glm::radians(75.0f);
 			LightVertAngle = glm::radians(30.0f);
@@ -590,10 +586,6 @@ class ProductShowcase : public BaseProject {
 			rot.x = glm::radians(70.0f);
 			rot.y = glm::radians(0.0f);
 			rot.z = glm::radians(0.0f);
-
-			emit = 0.0f;
-
-
 		}
 
 		float speedAnim = 0.1;
@@ -685,27 +677,24 @@ class ProductShowcase : public BaseProject {
 
 		float lightDist = 2.8f;
 
-		float offset = 0;
-		static float currOffset = 1.0f;
-
 		// Three spotlights
 
 		guboL.lightPos = glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle));
 		guboL.lightDir = -glm::normalize(currTra - guboL.lightPos);
 		guboL.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		guboL.AmbLightColor = glm::vec3(0.05f);
+		guboL.AmbLightColor = glm::vec3(1.0f);
 		guboL.eyePos = camPos;
 
 		guboL2.lightPos = glm::vec3(lightDist * cos(currLightHorAngle + glm::radians(120.0f)) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle + glm::radians(120.0f)) * cos(currLightVertAngle));
 		guboL2.lightDir = -glm::normalize(currTra - guboL2.lightPos);
 		guboL2.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		guboL2.AmbLightColor = glm::vec3(0.05f);
+		guboL2.AmbLightColor = glm::vec3(1.0f);
 		guboL2.eyePos = camPos;
 
 		guboL3.lightPos = glm::vec3(lightDist * cos(currLightHorAngle + glm::radians(240.0f)) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle + glm::radians(240.0f)) * cos(currLightVertAngle));
 		guboL3.lightDir = -glm::normalize(currTra - guboL3.lightPos);
 		guboL3.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		guboL3.AmbLightColor = glm::vec3(0.05f);
+		guboL3.AmbLightColor = glm::vec3(1.0f);
 		guboL3.eyePos = camPos;
 
 		// Writes value to the GPU
@@ -719,7 +708,7 @@ class ProductShowcase : public BaseProject {
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * (-0.2f), 0.0f));
 
-		uboPhone.amb = 0.5f; uboPhone.rho = 0.05f; uboPhone.K = 0.05f; uboPhone.F0 = 0.3f; uboPhone.g = 1.5f; uboPhone.beta = 2.0f; uboPhone.emit = 0.0f;
+		uboPhone.amb = 0.025f; uboPhone.rho = 0.05f; uboPhone.K = 0.05f; uboPhone.F0 = 0.3f; uboPhone.g = 1.5f; uboPhone.beta = 2.0f; uboPhone.emit = 0.0f;
 		uboPhone.sColor = glm::vec3(1.0f);
 
 		uboPhone.mvpMat = Prj * View * World;
@@ -730,7 +719,7 @@ class ProductShowcase : public BaseProject {
 		
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.4f, 0.0f));
 
-		uboFront.amb = 0.5f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 1.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f;
+		uboFront.amb = 0.025f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 1.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f;
 		uboFront.sColor = glm::vec3(1.0f);
 
 		uboFront.mvpMat = Prj * View * World;
@@ -741,7 +730,7 @@ class ProductShowcase : public BaseProject {
 		
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f, 0.0f));
 
-		uboScreenMesh.amb = 0.5f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 1.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f;
+		uboScreenMesh.amb = 0.0f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 1.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f;
 		uboScreenMesh.sColor = glm::vec3(1.0f);
 
 		uboScreenMesh.mvpMat = Prj * View * World;
@@ -752,7 +741,7 @@ class ProductShowcase : public BaseProject {
 		
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * -0.4f, 0.0f));
 
-		uboCamera.amb = 0.5f; uboCamera.rho = 0.05f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f;
+		uboCamera.amb = 0.025f; uboCamera.rho = 0.05f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f;
 		uboCamera.sColor = glm::vec3(1.0f);
 
 		uboCamera.mvpMat = Prj * View * World;
@@ -762,7 +751,7 @@ class ProductShowcase : public BaseProject {
 
 		World = glm::scale(phoneWorld, glm::vec3(30.0f));
 
-		uboChip.amb = 0.5f; uboChip.rho = 0.2f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 1.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f;
+		uboChip.amb = 0.025f; uboChip.rho = 0.2f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 1.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f;
 		uboChip.sColor = glm::vec3(1.0f);
 
 		uboChip.mvpMat = Prj * View * World;
@@ -782,7 +771,7 @@ class ProductShowcase : public BaseProject {
 
 		World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 
-		uboFloor.amb = 0.1f; uboFloor.gamma = 60.0f; uboFloor.sColor = glm::vec3(1.0f);
+		uboFloor.amb = 0.05f; uboFloor.gamma = 60.0f; uboFloor.sColor = glm::vec3(1.0f);
 		uboFloor.mvpMat = Prj * View * World;
 		uboFloor.mMat = World;
 		uboFloor.nMat = glm::inverse(glm::transpose(World));
