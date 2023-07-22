@@ -1771,7 +1771,7 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		}
 	}
 
-	void getInteraction(glm::vec3 &mouse, glm::vec3 &arrows, glm::vec3 &wasd, int &Lpressed, int &Cpressed,int &Hpressed,int &Epressed) {
+	void getInteraction(glm::vec3 &mouse, glm::vec3 &arrows, glm::vec3 &wasd, int &Lpressed, int &Cpressed,int &Hpressed,int &Epressed, bool &Spacepressed) {
 
 		static double old_xpos = 0, old_ypos = 0;
 		double xpos, ypos;
@@ -1818,6 +1818,8 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		Cpressed = glfwGetKey(window, GLFW_KEY_C);
 		Hpressed = glfwGetKey(window, GLFW_KEY_H);
 		Epressed = glfwGetKey(window, GLFW_KEY_E);
+		Spacepressed = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS; //added
+
 	}
 	
 	// Public part of the base class

@@ -23,6 +23,7 @@ struct UniformBufferObjectOBJ {
 	alignas(4) float g;
 	alignas(4) float beta;
 	alignas(4) float emit;
+	alignas(4) float baseColor;
 
 	alignas(16) glm::vec3 sColor;
 	alignas(16) glm::mat4 mvpMat;
@@ -490,6 +491,8 @@ class ProductShowcase : public BaseProject {
 		int Cpressed;
 		int Hpressed;
 		int Epressed;
+		bool Spacepressed = false;
+		static bool SpaceWasPress = false;
 		glm::vec3 tra;
 		glm::vec3 rot;
 		static glm::vec3 currTra = glm::vec3(0.0f);
@@ -506,7 +509,13 @@ class ProductShowcase : public BaseProject {
 		static float currLightHorAngle = glm::radians(90.0f);
 		static float currLightVertAngle = glm::radians(50.0f);
 
-		getInteraction(mouse, arrows, wasd, Lpressed, Cpressed, Hpressed, Epressed);
+		static float phoneColor = 1.0f;
+
+		getInteraction(mouse, arrows, wasd, Lpressed, Cpressed, Hpressed, Epressed, Spacepressed);
+
+		bool colorChange = (SpaceWasPress && (!Spacepressed));
+		SpaceWasPress = Spacepressed;
+
 		if (Lpressed && Cpressed + Hpressed + Epressed == 0) {
 			showPos = 1;
 		} else if (Cpressed && Lpressed + Hpressed + Epressed == 0) {
@@ -515,6 +524,11 @@ class ProductShowcase : public BaseProject {
 			showPos = 3;
 		} else if (Epressed && Lpressed + Cpressed + Hpressed == 0) {
 			showPos = 4;
+		} else if (colorChange && Lpressed + Cpressed + Hpressed == 0) {
+			if (phoneColor > 4.0f)
+				phoneColor = 1.0f;
+			else 
+				phoneColor += 1.0f;
 		} else {
 			showPos = 0;
 		}
@@ -709,7 +723,7 @@ class ProductShowcase : public BaseProject {
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * (-0.2f), 0.0f));
 
-		uboPhone.amb = 0.025f; uboPhone.rho = 0.05f; uboPhone.K = 0.05f; uboPhone.F0 = 0.3f; uboPhone.g = 1.5f; uboPhone.beta = 2.0f; uboPhone.emit = 0.0f;
+		uboPhone.amb = 0.025f; uboPhone.rho = 0.05f; uboPhone.K = 0.05f; uboPhone.F0 = 0.3f; uboPhone.g = 1.5f; uboPhone.beta = 2.0f; uboPhone.emit = 0.0f; uboPhone.baseColor = phoneColor;
 		uboPhone.sColor = glm::vec3(1.0f);
 
 		uboPhone.mvpMat = Prj * View * World;
@@ -720,7 +734,7 @@ class ProductShowcase : public BaseProject {
 		
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.4f, 0.0f));
 
-		uboFront.amb = 0.025f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 1.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f;
+		uboFront.amb = 0.025f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 1.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f; uboFront.baseColor = phoneColor;
 		uboFront.sColor = glm::vec3(1.0f);
 
 		uboFront.mvpMat = Prj * View * World;
@@ -731,7 +745,7 @@ class ProductShowcase : public BaseProject {
 		
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f, 0.0f));
 
-		uboScreenMesh.amb = 0.0f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 1.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f;
+		uboScreenMesh.amb = 0.0f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 1.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f; uboScreenMesh.baseColor = 0.0f;
 		uboScreenMesh.sColor = glm::vec3(1.0f);
 
 		uboScreenMesh.mvpMat = Prj * View * World;
@@ -742,7 +756,7 @@ class ProductShowcase : public BaseProject {
 		
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * -0.4f, 0.0f));
 
-		uboCamera.amb = 0.025f; uboCamera.rho = 0.05f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f;
+		uboCamera.amb = 0.025f; uboCamera.rho = 0.05f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f; uboCamera.baseColor = -1.0f;
 		uboCamera.sColor = glm::vec3(1.0f);
 
 		uboCamera.mvpMat = Prj * View * World;
@@ -752,7 +766,7 @@ class ProductShowcase : public BaseProject {
 
 		World = glm::scale(phoneWorld, glm::vec3(30.0f));
 
-		uboChip.amb = 0.025f; uboChip.rho = 0.2f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 1.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f;
+		uboChip.amb = 0.025f; uboChip.rho = 0.2f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 1.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f; uboChip.baseColor = -1.0f;
 		uboChip.sColor = glm::vec3(1.0f);
 
 		uboChip.mvpMat = Prj * View * World;
@@ -762,7 +776,7 @@ class ProductShowcase : public BaseProject {
 
 		World = glm::scale(glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f + 4.0f, 0.0f)), glm::vec3(132.7f));
 		
-		uboScreen.amb = 0.0f; uboScreen.rho = 0.05f; uboScreen.K = 0.0f; uboScreen.F0 = 0.3f; uboScreen.g = 1.5f; uboScreen.beta = 2.0f; uboScreen.emit = currEmit;
+		uboScreen.amb = 0.0f; uboScreen.rho = 0.05f; uboScreen.K = 0.0f; uboScreen.F0 = 0.3f; uboScreen.g = 1.5f; uboScreen.beta = 2.0f; uboScreen.emit = currEmit; uboScreen.baseColor = 0.0f;
 		uboScreen.sColor = glm::vec3(1.0f);
 
 		uboScreen.mvpMat = Prj * View * World;

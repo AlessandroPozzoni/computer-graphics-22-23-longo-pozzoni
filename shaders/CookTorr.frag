@@ -40,6 +40,7 @@ layout(set = 1, binding = 0) uniform UniformBufferObject {
     float g;
     float beta;
     float emit;
+	float baseColor;
 	vec3 sColor;
 	mat4 mvpMat;
 	mat4 mMat;
@@ -59,7 +60,30 @@ vec4 getColorWith(vec3 guboeyePos, vec3 gubolightDir, vec3 guboAmbLightColor, ve
 	vec3 L = normalize(gubolightDir);			// light direction
 
 	vec4 albedo = texture(tex, fragUV).rgba;		// main color
-    vec4 MD = albedo;
+    
+	vec4 red = {1.0f, 0.0f, 0.0f, 1.0f};
+	vec4 green = {0.0f, 1.0f, 0.0f, 1.0f};
+	vec4 blue = {0.0f, 0.0f, 1.0f, 1.0f};
+	vec4 orange = {1.0f, 1.0f, 0.0f, 1.0f};
+	vec4 black = {0.0f, 0.0f, 0.0f, 1.0f};
+
+	if (ubo.baseColor == 0.0f)
+		albedo = texture(tex, fragUV).rgba;		// main color
+	else if (ubo.baseColor == -1.0f)
+		albedo = black.rgba;		// main color
+	else if (ubo.baseColor == 1.0f)
+		albedo = vec4(1.0f).rgba;		// main color
+	else if (ubo.baseColor == 2.0f)
+		albedo = red.rgba;  
+	else if (ubo.baseColor == 3.0f)
+		albedo = green.rgba;	
+	else if (ubo.baseColor == 4.0f) 
+		albedo = blue.rgba;		// main color
+	else
+		albedo = orange.rgba;		// main color
+
+
+	vec4 MD = albedo;
 	vec3 MS = ubo.sColor;
 	vec4 MA = albedo * vec4(vec3(ubo.amb), 1.0f);
 	vec3 LA = guboAmbLightColor;
@@ -113,22 +137,5 @@ void main() {
 			getColorWith(gubo2.eyePos, gubo2.lightDir, gubo2.AmbLightColor, gubo2.lightPos, gubo2.lightColor) +
 			getColorWith(gubo3.eyePos, gubo3.lightDir, gubo3.AmbLightColor, gubo3.lightPos, gubo3.lightColor) +
 			ME, 0.0f, 1.0f);
-
-	/*if(dot(L, N) >= 0 && dot(L2, N) >= 0) {
-	    outColor = 
-			outColorWith(gubo.eyePos, gubo.lightDir, gubo.AmbLightColor, gubo.lightPos, gubo.lightColor) +
-			outColorWith(gubo2.eyePos, gubo2.lightDir, gubo2.AmbLightColor, gubo2.lightPos, gubo2.lightColor);
-
-    } else if(dot(L, N) >= 0 && dot(L2, N) < 0){
-		outColor = outColorWith(gubo.eyePos, gubo.lightDir, gubo.AmbLightColor, gubo.lightPos, gubo.lightColor);
-
-	} else if (dot(L, N) < 0 && dot(L2, N) >= 0) {
-		outColor = outColorWith(gubo2.eyePos, gubo2.lightDir, gubo2.AmbLightColor, gubo2.lightPos, gubo2.lightColor);
-	} else {
-        outColor = clamp(Ambient + Ambient2 + ME, 0.0f, 1.0f);
-    }
-	
-	
-	outColor = clamp(vec4(lightColor, 1.0f) * fr + Ambient + ME, 0.0f, 1.0f)*/
 
 }
