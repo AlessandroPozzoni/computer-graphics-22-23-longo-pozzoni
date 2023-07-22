@@ -64,7 +64,6 @@ vec4 getColorWith(vec3 guboeyePos, vec3 gubolightDir, vec3 guboAmbLightColor, ve
 	if(albedo.a < 1.0f) {
 		albedo.a = 0.0f;
 	}
-    vec4 MD = albedo;
     
 	vec4 orange = {1.0f, 0.474509803922f, 0.290196078431f, 1.0f};
 	vec4 purple = {0.580392156863f, 0.0f, 0.309803921569f, 1.0f};
