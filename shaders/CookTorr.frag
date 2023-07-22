@@ -61,26 +61,26 @@ vec4 getColorWith(vec3 guboeyePos, vec3 gubolightDir, vec3 guboAmbLightColor, ve
 
 	vec4 albedo = texture(tex, fragUV).rgba;		// main color
     
-	vec4 red = {1.0f, 0.0f, 0.0f, 1.0f};
-	vec4 green = {0.0f, 1.0f, 0.0f, 1.0f};
-	vec4 blue = {0.0f, 0.0f, 1.0f, 1.0f};
-	vec4 orange = {1.0f, 1.0f, 0.0f, 1.0f};
+	vec4 orange = {1.0f, 0.474509803922f, 0.290196078431f, 1.0f};
+	vec4 purple = {0.580392156863f, 0.0f, 0.309803921569f, 1.0f};
+	vec4 blue = {0.286274509804f, 0.196078431373f, 0.541176470588f, 1.0f};
+	vec4 yellow = {1.0f, 0.807843137255f, 0.556862745098f, 1.0f};
 	vec4 black = {0.0f, 0.0f, 0.0f, 1.0f};
 
 	if (ubo.baseColor == 0.0f)
-		albedo = texture(tex, fragUV).rgba;		// main color
+		albedo = texture(tex, fragUV).rgba;		// for elements with texture
 	else if (ubo.baseColor == -1.0f)
-		albedo = black.rgba;		// main color
+		albedo = black.rgba;					//black elements (cameras)
 	else if (ubo.baseColor == 1.0f)
-		albedo = vec4(1.0f).rgba;		// main color
+		albedo = vec4(1.0f).rgba;				//basic white
 	else if (ubo.baseColor == 2.0f)
-		albedo = red.rgba;  
+		albedo = orange.rgba;					//orange skin
 	else if (ubo.baseColor == 3.0f)
-		albedo = green.rgba;	
+		albedo = purple.rgba;					//purple skin
 	else if (ubo.baseColor == 4.0f) 
-		albedo = blue.rgba;		// main color
+		albedo = blue.rgba;						//blue skin
 	else
-		albedo = orange.rgba;		// main color
+		albedo = yellow.rgba;					//yellow skin
 
 
 	vec4 MD = albedo;
