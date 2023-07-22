@@ -33,6 +33,7 @@ struct UniformBufferObjectOBJ {
 
 struct OverlayUniformBlock {
 	alignas(4) float visible;
+	alignas(4) float Ar;
 };
 
 struct GlobalUniformBufferObjectLight {
@@ -219,7 +220,7 @@ class ProductShowcase : public BaseProject {
 		createScreen(MScreen.vertices, MScreen.indices, 1800.0f, 831.0f);
 		MScreen.initMesh(this, &VMesh);
 
-		MOverCam.vertices = { {{-1.0f, -1.0f}, {0.0102f, 0.0f}}, {{-1.0f, 1.0f}, {0.0102f,1.0f}},
+		MOverCam.vertices = { {{-1.0f, -1.0f}, {0.0f, 0.0f}}, {{-1.0f, 1.0f}, {0.0f,1.0f}},
 					 {{ 1.0f,-1.0f}, {1.0f,0.0f}}, {{ 1.0f, 1.0f}, {1.0f,1.0f}} };
 		MOverCam.indices = { 0, 1, 2,    1, 2, 3 };
 		MOverCam.initMesh(this, &VOverlay);
@@ -711,13 +712,13 @@ class ProductShowcase : public BaseProject {
 		World = floating * glm::inverse(translateToCenter) * combinedRotation * scale * translateToCenter;*/
 		
 		
-		uboOverCam.visible = (showPos == 2) ? 1.0f : 0.0f;
+		uboOverCam.visible = (showPos == 2) ? 1.0f : 0.0f; uboOverCam.Ar = Ar;
 		DSOverCam.map(currentImage, &uboOverCam, sizeof(uboOverCam), 0);
 
-		uboOverJack.visible = (showPos == 1) ? 1.0f : 0.0f;
+		uboOverJack.visible = (showPos == 1) ? 1.0f : 0.0f; uboOverJack.Ar = Ar;
 		DSOverJack.map(currentImage, &uboOverJack, sizeof(uboOverJack), 0);
 
-		uboOverUI.visible = (showPos == 3) ? 1.0f : 0.0f;
+		uboOverUI.visible = (showPos == 3) ? 1.0f : 0.0f; uboOverUI.Ar = Ar;
 		DSOverUI.map(currentImage, &uboOverUI, sizeof(uboOverUI), 0);
 
 		// Parameters
