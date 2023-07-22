@@ -574,6 +574,9 @@ class ProductShowcase : public BaseProject {
 
 		static float phoneColor = 1.0f;
 
+		glm::vec4 visible = glm::vec4(0.0f);
+		static glm::vec4 currVisible = glm::vec4(0.0f);
+
 		getInteraction(mouse, arrows, wasd, Lpressed, Cpressed, Hpressed, Epressed, Spacepressed);
 
 		bool colorChange = (SpaceWasPress && (!Spacepressed));
@@ -614,6 +617,8 @@ class ProductShowcase : public BaseProject {
 			LightHorAngle = glm::radians(90.0f);
 			LightVertAngle = glm::radians(35.0f);
 
+			visible = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+
 			break;
 		  case 2: //camera
 		 	tra.x = 0.20f;
@@ -626,6 +631,8 @@ class ProductShowcase : public BaseProject {
 			
 			LightHorAngle = glm::radians(75.0f);
 			LightVertAngle = glm::radians(30.0f);
+
+			visible = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
 			break;
 		  case 3: //display
@@ -642,6 +649,8 @@ class ProductShowcase : public BaseProject {
 
 			LightHorAngle = glm::radians(90.0f);
 			LightVertAngle = glm::radians(60.0f);
+			
+			visible = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
 			
 			break;
 		  case 4: //explosion
@@ -711,14 +720,16 @@ class ProductShowcase : public BaseProject {
 
 		World = floating * glm::inverse(translateToCenter) * combinedRotation * scale * translateToCenter;*/
 		
+		currVisible = 0.8f * currVisible + 0.2f * visible;
+
+
+		uboOverJack.visible = currVisible.x; uboOverJack.Ar = Ar;
+		DSOverJack.map(currentImage, &uboOverJack, sizeof(uboOverJack), 0);
 		
-		uboOverCam.visible = (showPos == 2) ? 1.0f : 0.0f; uboOverCam.Ar = Ar;
+		uboOverCam.visible = currVisible.y; uboOverCam.Ar = Ar;
 		DSOverCam.map(currentImage, &uboOverCam, sizeof(uboOverCam), 0);
 
-		uboOverJack.visible = (showPos == 1) ? 1.0f : 0.0f; uboOverJack.Ar = Ar;
-		DSOverJack.map(currentImage, &uboOverJack, sizeof(uboOverJack), 0);
-
-		uboOverUI.visible = (showPos == 3) ? 1.0f : 0.0f; uboOverUI.Ar = Ar;
+		uboOverUI.visible = currVisible.z; uboOverUI.Ar = Ar;
 		DSOverUI.map(currentImage, &uboOverUI, sizeof(uboOverUI), 0);
 
 		// Parameters
