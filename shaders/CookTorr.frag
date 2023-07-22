@@ -15,7 +15,15 @@ layout(set = 0, binding = 0) uniform GlobalUniformBufferObject {
     vec3 eyePos;
 } gubo;
 
-layout(set = 0, binding = 1) uniform GlobalUniformBufferObject2 {
+layout(set = 0, binding = 1) uniform GlobalUniformBufferObject1 {
+    vec3 lightPos;
+    vec3 lightDir;
+    vec4 lightColor;
+    vec3 AmbLightColor;
+    vec3 eyePos;
+} gubo1;
+
+layout(set = 0, binding = 2) uniform GlobalUniformBufferObject2 {
     vec3 lightPos;
     vec3 lightDir;
     vec4 lightColor;
@@ -23,7 +31,7 @@ layout(set = 0, binding = 1) uniform GlobalUniformBufferObject2 {
     vec3 eyePos;
 } gubo2;
 
-layout(set = 0, binding = 2) uniform GlobalUniformBufferObject3 {
+layout(set = 0, binding = 3) uniform GlobalUniformBufferObject3 {
     vec3 lightPos;
     vec3 lightDir;
     vec4 lightColor;
@@ -137,7 +145,7 @@ void main() {
     vec4 ME = texture(tex, fragUV).rgba * emit;
 
 	outColor = clamp(
-			getColorWith(gubo.eyePos, gubo.lightDir, gubo.AmbLightColor, gubo.lightPos, gubo.lightColor) +
+			getColorWith(gubo1.eyePos, gubo1.lightDir, gubo1.AmbLightColor, gubo1.lightPos, gubo1.lightColor) +
 			getColorWith(gubo2.eyePos, gubo2.lightDir, gubo2.AmbLightColor, gubo2.lightPos, gubo2.lightColor) +
 			getColorWith(gubo3.eyePos, gubo3.lightDir, gubo3.AmbLightColor, gubo3.lightPos, gubo3.lightColor) +
 			ME, 0.0f, 1.0f);

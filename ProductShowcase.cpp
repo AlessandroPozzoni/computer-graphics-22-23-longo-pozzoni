@@ -91,7 +91,7 @@ class ProductShowcase : public BaseProject {
 	MeshUniformBlock uboFloor, uboBallLight, uboBallLight2, uboBallLight3, uboSpotlight;
 	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera, uboChip;
 
-	GlobalUniformBufferObjectLight guboL, guboL2, guboL3;
+	GlobalUniformBufferObjectLight gubo, guboL1, guboL2, guboL3;
 
 	UniformBufferObject skyBubo;
 
@@ -148,7 +148,8 @@ class ProductShowcase : public BaseProject {
 		DSLGuboLight.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
-					{2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS}
+					{2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
+					{3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS}
 				});
 
 		DSLSkyBox.init(this, {
@@ -341,7 +342,8 @@ class ProductShowcase : public BaseProject {
 		DSGuboLight.init(this, &DSLGuboLight, {
 					{0, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr},
 					{1, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr},
-					{2, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr}
+					{2, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr},
+					{3, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr}
 				});
 	}
 
@@ -764,13 +766,20 @@ class ProductShowcase : public BaseProject {
 
 		float lightDist = 2.8f;
 
-		// Three spotlights
+		// Three spotlights + direct light
 
-		guboL.lightPos = glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle));
-		guboL.lightDir = -glm::normalize(currTra - guboL.lightPos);
-		guboL.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		guboL.AmbLightColor = glm::vec3(1.0f);
-		guboL.eyePos = camPos;
+		gubo.lightPos = glm::normalize(glm::vec3(100.0f * sin(glm::radians(-33.0f)), 12.0f, 100.0f * cos(glm::radians(-33.0f))));
+		gubo.lightDir = -gubo.lightPos;
+		gubo.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		gubo.AmbLightColor = glm::vec3(1.0f);
+		gubo.eyePos = camPos;
+
+
+		guboL1.lightPos = glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle));
+		guboL1.lightDir = -glm::normalize(currTra - guboL1.lightPos);
+		guboL1.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		guboL1.AmbLightColor = glm::vec3(1.0f);
+		guboL1.eyePos = camPos;
 
 		guboL2.lightPos = glm::vec3(lightDist * cos(currLightHorAngle + glm::radians(120.0f)) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle + glm::radians(120.0f)) * cos(currLightVertAngle));
 		guboL2.lightDir = -glm::normalize(currTra - guboL2.lightPos);
@@ -785,9 +794,10 @@ class ProductShowcase : public BaseProject {
 		guboL3.eyePos = camPos;
 
 		// Writes value to the GPU
-		DSGuboLight.map(currentImage, &guboL, sizeof(guboL), 0);
-		DSGuboLight.map(currentImage, &guboL2, sizeof(guboL2), 1);
-		DSGuboLight.map(currentImage, &guboL3, sizeof(guboL3), 2);
+		DSGuboLight.map(currentImage, &gubo, sizeof(gubo), 0);
+		DSGuboLight.map(currentImage, &guboL1, sizeof(guboL1), 1);
+		DSGuboLight.map(currentImage, &guboL2, sizeof(guboL2), 2);
+		DSGuboLight.map(currentImage, &guboL3, sizeof(guboL3), 3);
 
 		glm::mat4 World = glm::mat4(1.0f);
 
