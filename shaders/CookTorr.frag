@@ -59,6 +59,10 @@ vec4 getColorWith(vec3 guboeyePos, vec3 gubolightDir, vec3 guboAmbLightColor, ve
 	vec3 L = normalize(gubolightDir);			// light direction
 
 	vec4 albedo = texture(tex, fragUV).rgba;		// main color
+
+	if(albedo.a < 1.0f) {
+		albedo.a = 0.0f;
+	}
     vec4 MD = albedo;
 	vec3 MS = ubo.sColor;
 	vec4 MA = albedo * vec4(vec3(ubo.amb), 1.0f);
