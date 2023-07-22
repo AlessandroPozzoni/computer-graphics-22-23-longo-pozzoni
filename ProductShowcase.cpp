@@ -766,7 +766,7 @@ class ProductShowcase : public BaseProject {
 
 		World = glm::scale(phoneWorld, glm::vec3(30.0f));
 
-		uboChip.amb = 0.025f; uboChip.rho = 0.2f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 1.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f; uboChip.baseColor = -1.0f;
+		uboChip.amb = 0.025f; uboChip.rho = 0.2f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 1.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f; uboChip.baseColor = 0.0f;
 		uboChip.sColor = glm::vec3(1.0f);
 
 		uboChip.mvpMat = Prj * View * World;
