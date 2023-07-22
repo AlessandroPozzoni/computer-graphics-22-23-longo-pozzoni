@@ -78,12 +78,14 @@ class ProductShowcase : public BaseProject {
 
 	// Models, textures and Descriptors
 	Model<VertexMesh> MSkyBox, MPhone, MFront, MScreenMesh, MCamera, MChip, MFloor, MBallLight, MSpotlight, MScreen;
+	Model<VertexOverlay> MOverCam, MOverJack, MOverUI;
 
 	DescriptorSet DSGuboLight, DSFloor, DSSkyBox,
 					DSBallLight, DSBallLight2, DSBallLight3, DSSpotlight,
-					DSScreen, DSPhone, DSFront, DSScreenMesh, DSCamera, DSChip;
+					DSScreen, DSPhone, DSFront, DSScreenMesh, DSCamera, DSChip,
+					DSOverCam, DSOverJack, DSOverUI;
 
-	Texture TPhone, TScreenMesh, TFloor, TSkyBox, TBallLight, TScreen, TChip;
+	Texture TPhone, TScreenMesh, TFloor, TSkyBox, TBallLight, TScreen, TChip, TOverCam, TOverJack, TOverUI;
 	
 
 	MeshUniformBlock uboFloor, uboBallLight, uboBallLight2, uboBallLight3, uboSpotlight;
@@ -92,6 +94,9 @@ class ProductShowcase : public BaseProject {
 	GlobalUniformBufferObjectLight guboL, guboL2, guboL3;
 
 	UniformBufferObject skyBubo;
+
+	OverlayUniformBlock uboOverCam, uboOverJack, uboOverUI;
+
 
 	// Other application parameters
 	float CamH, CamDist, CamYaw, LightHorAngle, LightVertAngle;
@@ -179,7 +184,7 @@ class ProductShowcase : public BaseProject {
 		PObj.init(this, &VMesh, "shaders/CookTorrVert.spv", "shaders/CookTorrFrag.spv", {&DSLGuboLight, &DSLObj});
 		POverlay.init(this, &VOverlay, "shaders/OverlayVert.spv", "shaders/OverlayFrag.spv", {&DSLOverlay});
 		POverlay.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
- 								    VK_CULL_MODE_NONE, false);
+ 								    VK_CULL_MODE_NONE, true);
 
 		PSkyBox.init(this, &VMesh, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", {&DSLSkyBox});
 		PSkyBox.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
@@ -212,6 +217,21 @@ class ProductShowcase : public BaseProject {
 
 		createScreen(MScreen.vertices, MScreen.indices, 1800.0f, 831.0f);
 		MScreen.initMesh(this, &VMesh);
+
+		MOverCam.vertices = { {{-1.0f, -1.0f}, {0.0102f, 0.0f}}, {{-1.0f, 1.0f}, {0.0102f,1.0f}},
+					 {{ 1.0f,-1.0f}, {1.0f,0.0f}}, {{ 1.0f, 1.0f}, {1.0f,1.0f}} };
+		MOverCam.indices = { 0, 1, 2,    1, 2, 3 };
+		MOverCam.initMesh(this, &VOverlay);
+
+		MOverJack.vertices = { {{-1.0f, -1.0f}, {0.0102f, 0.0f}}, {{-1.0f, 1.0f}, {0.0f,1.0f}},
+						 {{1.0f,-1.0f}, {1.0f,0.0f}}, {{1.0f, 1.0f}, {1.0f,1.0f}} };
+		MOverJack.indices = { 0, 1, 2,    1, 2, 3 };
+		MOverJack.initMesh(this, &VOverlay);
+
+		MOverUI.vertices = { {{-1.0f, -1.0f}, {0.0102f, 0.0f}}, {{-1.0f, 1.0f}, {0.0f,1.0f}},
+				 {{1.0f,-1.0f}, {1.0f,0.0f}}, {{1.0f, 1.0f}, {1.0f,1.0f}} };
+		MOverUI.indices = { 0, 1, 2,    1, 2, 3 };
+		MOverUI.initMesh(this, &VOverlay);
 		
 		// Create the textures
 		// The second parameter is the file name
@@ -221,6 +241,9 @@ class ProductShowcase : public BaseProject {
 		TBallLight.init(this, "textures/Grey.png");
 		TScreen.init(this, "textures/iphone_screen.png");
 		TChip.init(this, "textures/Chip.png");
+		TOverCam.init(this, "textures/overlay_camera.png");
+		TOverJack.init(this, "textures/overlay_jack.png");
+		TOverUI.init(this, "textures/overlay_screen.png");
 		
 		// Init local variables
 		CamH = 1.0f;
@@ -301,6 +324,18 @@ class ProductShowcase : public BaseProject {
 					{1, TEXTURE, 0, &TScreen}
 			});
 
+		DSOverCam.init(this, &DSLOverlay, {
+					{0, UNIFORM, sizeof(OverlayUniformBlock), nullptr},
+					{1, TEXTURE, 0, &TOverCam}
+			});
+		DSOverJack.init(this, &DSLOverlay, {
+					{0, UNIFORM, sizeof(OverlayUniformBlock), nullptr},
+					{1, TEXTURE, 0, &TOverJack}
+			});
+		DSOverUI.init(this, &DSLOverlay, {
+					{0, UNIFORM, sizeof(OverlayUniformBlock), nullptr},
+					{1, TEXTURE, 0, &TOverUI}
+			});
 		
 
 		DSGuboLight.init(this, &DSLGuboLight, {
@@ -332,6 +367,9 @@ class ProductShowcase : public BaseProject {
 		DSBallLight3.cleanup();
 		DSSpotlight.cleanup();
 		DSScreen.cleanup();
+		DSOverCam.cleanup();
+		DSOverJack.cleanup();
+		DSOverUI.cleanup();
 
 		DSGuboLight.cleanup();
 	}
@@ -349,6 +387,9 @@ class ProductShowcase : public BaseProject {
 		TBallLight.cleanup();
 		TScreen.cleanup();
 		TChip.cleanup();
+		TOverCam.cleanup();
+		TOverJack.cleanup();
+		TOverUI.cleanup();
 		
 		// Cleanup models
 		MPhone.cleanup();
@@ -361,6 +402,9 @@ class ProductShowcase : public BaseProject {
 		MBallLight.cleanup();
 		MSpotlight.cleanup();
 		MScreen.cleanup();
+		MOverCam.cleanup();
+		MOverJack.cleanup();
+		MOverUI.cleanup();
 		
 		// Cleanup descriptor set layouts
 		DSLMesh.cleanup();
@@ -456,6 +500,22 @@ class ProductShowcase : public BaseProject {
 		DSScreen.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MScreen.indices.size()), 1, 0, 0, 0);
+
+		POverlay.bind(commandBuffer);
+		MOverCam.bind(commandBuffer);
+		DSOverCam.bind(commandBuffer, POverlay, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MOverCam.indices.size()), 1, 0, 0, 0);
+
+		MOverJack.bind(commandBuffer);
+		DSOverJack.bind(commandBuffer, POverlay, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MOverJack.indices.size()), 1, 0, 0, 0);
+
+		MOverUI.bind(commandBuffer);
+		DSOverUI.bind(commandBuffer, POverlay, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MOverJack.indices.size()), 1, 0, 0, 0);
 
 	}
 
@@ -648,6 +708,16 @@ class ProductShowcase : public BaseProject {
 
 		World = floating * glm::inverse(translateToCenter) * combinedRotation * scale * translateToCenter;*/
 		
+		
+		uboOverCam.visible = (showPos == 2) ? 1.0f : 0.0f;
+		DSOverCam.map(currentImage, &uboOverCam, sizeof(uboOverCam), 0);
+
+		uboOverJack.visible = (showPos == 1) ? 1.0f : 0.0f;
+		DSOverJack.map(currentImage, &uboOverJack, sizeof(uboOverJack), 0);
+
+		uboOverUI.visible = (showPos == 3) ? 1.0f : 0.0f;
+		DSOverUI.map(currentImage, &uboOverUI, sizeof(uboOverUI), 0);
+
 		// Parameters
 		// Camera FOV-y, Near Plane and Far Plane
 		const float FOVy = glm::radians(45.0f);
