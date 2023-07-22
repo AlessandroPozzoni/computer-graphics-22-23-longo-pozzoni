@@ -40,6 +40,7 @@ layout(set = 1, binding = 0) uniform UniformBufferObject {
     float g;
     float beta;
     float emit;
+	float baseColor;
 	vec3 sColor;
 	mat4 mvpMat;
 	mat4 mMat;
@@ -64,6 +65,30 @@ vec4 getColorWith(vec3 guboeyePos, vec3 gubolightDir, vec3 guboAmbLightColor, ve
 		albedo.a = 0.0f;
 	}
     vec4 MD = albedo;
+    
+	vec4 orange = {1.0f, 0.474509803922f, 0.290196078431f, 1.0f};
+	vec4 purple = {0.580392156863f, 0.0f, 0.309803921569f, 1.0f};
+	vec4 blue = {0.286274509804f, 0.196078431373f, 0.541176470588f, 1.0f};
+	vec4 yellow = {1.0f, 0.807843137255f, 0.556862745098f, 1.0f};
+	vec4 black = {0.0f, 0.0f, 0.0f, 1.0f};
+
+	if (ubo.baseColor == 0.0f)
+		albedo = texture(tex, fragUV).rgba;		// for elements with texture
+	else if (ubo.baseColor == -1.0f)
+		albedo = black.rgba;					//black elements (cameras)
+	else if (ubo.baseColor == 1.0f)
+		albedo = vec4(1.0f).rgba;				//basic white
+	else if (ubo.baseColor == 2.0f)
+		albedo = orange.rgba;					//orange skin
+	else if (ubo.baseColor == 3.0f)
+		albedo = purple.rgba;					//purple skin
+	else if (ubo.baseColor == 4.0f) 
+		albedo = blue.rgba;						//blue skin
+	else
+		albedo = yellow.rgba;					//yellow skin
+
+
+	vec4 MD = albedo;
 	vec3 MS = ubo.sColor;
 	vec4 MA = albedo * vec4(vec3(ubo.amb), 1.0f);
 	vec3 LA = guboAmbLightColor;
@@ -117,22 +142,5 @@ void main() {
 			getColorWith(gubo2.eyePos, gubo2.lightDir, gubo2.AmbLightColor, gubo2.lightPos, gubo2.lightColor) +
 			getColorWith(gubo3.eyePos, gubo3.lightDir, gubo3.AmbLightColor, gubo3.lightPos, gubo3.lightColor) +
 			ME, 0.0f, 1.0f);
-
-	/*if(dot(L, N) >= 0 && dot(L2, N) >= 0) {
-	    outColor = 
-			outColorWith(gubo.eyePos, gubo.lightDir, gubo.AmbLightColor, gubo.lightPos, gubo.lightColor) +
-			outColorWith(gubo2.eyePos, gubo2.lightDir, gubo2.AmbLightColor, gubo2.lightPos, gubo2.lightColor);
-
-    } else if(dot(L, N) >= 0 && dot(L2, N) < 0){
-		outColor = outColorWith(gubo.eyePos, gubo.lightDir, gubo.AmbLightColor, gubo.lightPos, gubo.lightColor);
-
-	} else if (dot(L, N) < 0 && dot(L2, N) >= 0) {
-		outColor = outColorWith(gubo2.eyePos, gubo2.lightDir, gubo2.AmbLightColor, gubo2.lightPos, gubo2.lightColor);
-	} else {
-        outColor = clamp(Ambient + Ambient2 + ME, 0.0f, 1.0f);
-    }
-	
-	
-	outColor = clamp(vec4(lightColor, 1.0f) * fr + Ambient + ME, 0.0f, 1.0f)*/
 
 }
