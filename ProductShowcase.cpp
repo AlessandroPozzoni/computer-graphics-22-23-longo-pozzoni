@@ -257,7 +257,7 @@ class ProductShowcase : public BaseProject {
 		
 		DSCamera.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
-					{1, TEXTURE, 0, &TPhone}
+					{1, TEXTURE, 0, &TScreenMesh}
 			});
 
 		DSChip.init(this, &DSLObj, {
@@ -292,7 +292,7 @@ class ProductShowcase : public BaseProject {
 
 		DSSpotlight.init(this, &DSLMesh, {
 					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
-					{1, TEXTURE, 0, &TBallLight}
+					{1, TEXTURE, 0, &TFloor}
 			});
 
 		DSScreen.init(this, &DSLObj, {
@@ -420,6 +420,9 @@ class ProductShowcase : public BaseProject {
 
 		MSpotlight.bind(commandBuffer);
 		DSSpotlight.bind(commandBuffer, PMesh, 1, currentImage);
+		// DON'T DELETE
+		// vkCmdDrawIndexed(commandBuffer,
+		// 	static_cast<uint32_t>(MSpotlight.indices.size()), 1, 0, 0, 0);
 		
 
 		PObj.bind(commandBuffer);
@@ -702,8 +705,6 @@ class ProductShowcase : public BaseProject {
 		DSGuboLight.map(currentImage, &guboL2, sizeof(guboL2), 1);
 		DSGuboLight.map(currentImage, &guboL3, sizeof(guboL3), 2);
 
-		currOffset = 0.98 * currOffset + 0.02 * offset;
-
 		glm::mat4 World = glm::mat4(1.0f);
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * (-0.2f), 0.0f));
@@ -784,6 +785,13 @@ class ProductShowcase : public BaseProject {
 		skyBubo.nMat = glm::mat4(1.0f);
 		DSSkyBox.map(currentImage, &skyBubo, sizeof(skyBubo), 0);
 
+		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.01f));
+		uboSpotlight.amb = 0.05f; uboSpotlight.gamma = 60.0f; uboSpotlight.sColor = glm::vec3(1.0f);
+		uboSpotlight.mvpMat = Prj * View * World;
+		uboSpotlight.mMat = World;
+		uboSpotlight.nMat = glm::inverse(glm::transpose(World));
+		DSSpotlight.map(currentImage, &uboSpotlight, sizeof(uboSpotlight), 0);
+
 		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.05f));
 
 		uboBallLight.amb = 0.0f; uboBallLight.gamma = 180.0f; uboBallLight.sColor = glm::vec3(1.0f);
@@ -791,6 +799,7 @@ class ProductShowcase : public BaseProject {
 		uboBallLight.mMat = World;
 		uboBallLight.nMat = glm::inverse(glm::transpose(World));
 		DSBallLight.map(currentImage, &uboBallLight, sizeof(uboBallLight), 0);
+
 		
 		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(glm::radians(120.0f) + currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(glm::radians(120.0f) + currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.05f));
 
