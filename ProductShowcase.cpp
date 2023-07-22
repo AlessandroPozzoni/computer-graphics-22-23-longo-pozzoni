@@ -424,7 +424,7 @@ class ProductShowcase : public BaseProject {
 		PMesh.destroy();		
 		PObj.destroy();
 		POverlay.destroy();
-		PSkyBox.cleanup();
+		PSkyBox.destroy();
 	}
 	
 	// Here it is the creation of the command buffer:
