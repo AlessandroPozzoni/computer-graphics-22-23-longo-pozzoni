@@ -866,7 +866,7 @@ protected:
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * -0.4f, 0.0f));
 
-		uboCamera.amb = 0.025f; uboCamera.rho = 0.05f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f; uboCamera.baseColor = phoneColor;
+		uboCamera.amb = 0.025f; uboCamera.rho = 0.3f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f; uboCamera.baseColor = phoneColor;
 		uboCamera.sColor = glm::vec3(1.0f);
 
 		uboCamera.mvpMat = Prj * View * World;
