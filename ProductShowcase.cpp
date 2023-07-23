@@ -60,7 +60,7 @@ struct VertexOverlay {
 
 
 class ProductShowcase : public BaseProject {
-	protected:
+protected:
 
 	float Ar;
 
@@ -78,19 +78,19 @@ class ProductShowcase : public BaseProject {
 	Pipeline PSkyBox;
 
 	// Models, textures and Descriptors
-	Model<VertexMesh> MSkyBox, MPhone, MFront, MScreenMesh, MCamera, MChip, MFloor, MBallLight, MSpotlight, MScreen;
+	Model<VertexMesh> MSkyBox, MPhone, MFront, MScreenMesh, MCamera, MLens, MChip, MFloor, MBallLight, MSpotlight, MScreen;
 	Model<VertexOverlay> MOverCam, MOverJack, MOverUI;
 
 	DescriptorSet DSGuboLight, DSFloor, DSSkyBox,
-					DSBallLight, DSBallLight2, DSBallLight3, DSSpotlight,
-					DSScreen, DSPhone, DSFront, DSScreenMesh, DSCamera, DSChip,
-					DSOverCam, DSOverJack, DSOverUI;
+		DSBallLight, DSBallLight2, DSBallLight3, DSSpotlight,
+		DSScreen, DSPhone, DSFront, DSScreenMesh, DSCamera, DSLens, DSChip,
+		DSOverCam, DSOverJack, DSOverUI;
 
 	Texture TPhone, TScreenMesh, TFloor, TSkyBox, TBallLight, TScreen, TChip, TOverCam, TOverJack, TOverUI;
-	
+
 
 	MeshUniformBlock uboFloor, uboBallLight, uboBallLight2, uboBallLight3, uboSpotlight;
-	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera, uboChip;
+	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera, uboLens, uboChip;
 
 	GlobalUniformBufferObjectLight gubo, guboL1, guboL2, guboL3;
 
@@ -110,22 +110,22 @@ class ProductShowcase : public BaseProject {
 		windowWidth = 800;
 		windowHeight = 600;
 		windowTitle = "New IPhone mega power plasss";
-    	windowResizable = GLFW_TRUE;
-		initialBackgroundColor = {0.0f, 0.000f, 0.00f, 1.0f};
-		
+		windowResizable = GLFW_TRUE;
+		initialBackgroundColor = { 0.0f, 0.000f, 0.00f, 1.0f };
+
 		// Descriptor pool sizes
 		uniformBlocksInPool = 100;
 		texturesInPool = 100;
 		setsInPool = 100;
-		
+
 		Ar = (float)windowWidth / (float)windowHeight;
 	}
-	
+
 	// What to do when the window changes size
 	void onWindowResize(int w, int h) {
 		Ar = (float)w / (float)h;
 	}
-	
+
 	// Here you load and setup all your Vulkan Models and Texutures.
 	// Here you also create your Descriptor set layouts and load the shaders for the pipelines
 	void localInit() {
@@ -134,63 +134,63 @@ class ProductShowcase : public BaseProject {
 		DSLMesh.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
-				});
+			});
 
 		DSLObj.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
-				});
-				
+			});
+
 		DSLOverlay.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
-				});
+			});
 
 		DSLGuboLight.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS}
-				});
+			});
 
 		DSLSkyBox.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT},
 					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
-				  });
+			});
 
 		// Vertex descriptors
 		VMesh.init(this, {
-				  // this array contains the bindings
-				  {0, sizeof(VertexMesh), VK_VERTEX_INPUT_RATE_VERTEX}
-				}, {
-				  // this array contains the location
-				  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexMesh, pos),
-				         sizeof(glm::vec3), POSITION},
-				  {0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexMesh, norm),
-				         sizeof(glm::vec3), NORMAL},
-				  {0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(VertexMesh, UV),
-				         sizeof(glm::vec2), UV}
-				});
+			// this array contains the bindings
+			{0, sizeof(VertexMesh), VK_VERTEX_INPUT_RATE_VERTEX}
+			}, {
+				// this array contains the location
+				{0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexMesh, pos),
+					   sizeof(glm::vec3), POSITION},
+				{0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexMesh, norm),
+					   sizeof(glm::vec3), NORMAL},
+				{0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(VertexMesh, UV),
+					   sizeof(glm::vec2), UV}
+			});
 
 		VOverlay.init(this, {
 				  {0, sizeof(VertexOverlay), VK_VERTEX_INPUT_RATE_VERTEX}
-				}, {
-				  {0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(VertexOverlay, pos),
-				         sizeof(glm::vec2), OTHER},
-				  {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(VertexOverlay, UV),
-				         sizeof(glm::vec2), UV}
-				});
+			}, {
+			  {0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(VertexOverlay, pos),
+					 sizeof(glm::vec2), OTHER},
+			  {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(VertexOverlay, UV),
+					 sizeof(glm::vec2), UV}
+			});
 
 
-		PMesh.init(this, &VMesh, "shaders/MeshVert.spv", "shaders/MeshFrag.spv", {&DSLGuboLight, &DSLMesh});
-		PObj.init(this, &VMesh, "shaders/CookTorrVert.spv", "shaders/CookTorrFrag.spv", {&DSLGuboLight, &DSLObj});
-		POverlay.init(this, &VOverlay, "shaders/OverlayVert.spv", "shaders/OverlayFrag.spv", {&DSLOverlay});
+		PMesh.init(this, &VMesh, "shaders/MeshVert.spv", "shaders/MeshFrag.spv", { &DSLGuboLight, &DSLMesh });
+		PObj.init(this, &VMesh, "shaders/CookTorrVert.spv", "shaders/CookTorrFrag.spv", { &DSLGuboLight, &DSLObj });
+		POverlay.init(this, &VOverlay, "shaders/OverlayVert.spv", "shaders/OverlayFrag.spv", { &DSLOverlay });
 		POverlay.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
- 								    VK_CULL_MODE_NONE, true);
+			VK_CULL_MODE_NONE, true);
 
-		PSkyBox.init(this, &VMesh, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", {&DSLSkyBox});
+		PSkyBox.init(this, &VMesh, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", { &DSLSkyBox });
 		PSkyBox.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
- 								    VK_CULL_MODE_BACK_BIT, false);
+			VK_CULL_MODE_BACK_BIT, false);
 
 		// Models, textures and Descriptors (values assigned to the uniforms)
 
@@ -199,14 +199,15 @@ class ProductShowcase : public BaseProject {
 		MFront.init(this, &VMesh, "models/front.obj", OBJ);
 		MScreenMesh.init(this, &VMesh, "models/screen.obj", OBJ);
 		MCamera.init(this, &VMesh, "models/camera.obj", OBJ);
+		MLens.init(this, &VMesh, "models/lens.obj", OBJ);
 
 		createBox(MChip.vertices, MChip.indices, 1.0f, 1.0f, 0.05f);
 		MChip.initMesh(this, &VMesh);
-		
+
 		MSkyBox.init(this, &VMesh, "models/SkyBoxCube.obj", OBJ);
-		const char *T2fn[] = {"textures/skybox/Skybox_Right.png", "textures/skybox/Skybox_Left.png",
+		const char* T2fn[] = { "textures/skybox/Skybox_Right.png", "textures/skybox/Skybox_Left.png",
 							  "textures/skybox/Skybox_Top.png",   "textures/skybox/Skybox_Bottom.png",
-							  "textures/skybox/Skybox_Front.png", "textures/skybox/Skybox_Back.png"};
+							  "textures/skybox/Skybox_Front.png", "textures/skybox/Skybox_Back.png" };
 		TSkyBox.initCubic(this, T2fn);
 
 		createFloor(MFloor.vertices, MFloor.indices);
@@ -234,19 +235,19 @@ class ProductShowcase : public BaseProject {
 				 {{1.0f,-1.0f}, {1.0f,0.0f}}, {{1.0f, 1.0f}, {1.0f,1.0f}} };
 		MOverUI.indices = { 0, 1, 2,    1, 2, 3 };
 		MOverUI.initMesh(this, &VOverlay);
-		
+
 		// Create the textures
 		// The second parameter is the file name
 		TPhone.init(this, "textures/Solid_red.png");
 		TScreenMesh.init(this, "textures/Black.png");
 		TFloor.init(this, "textures/Grey.png");
 		TBallLight.init(this, "textures/Grey.png");
-		TScreen.init(this, "textures/iphone_screen.png");
+		TScreen.init(this, "textures/iphone_screen_new.png");
 		TChip.init(this, "textures/Chip.png");
 		TOverCam.init(this, "textures/overlay_camera.png");
 		TOverJack.init(this, "textures/overlay_jack.png");
 		TOverUI.init(this, "textures/overlay_screen.png");
-		
+
 		// Init local variables
 		CamH = 1.0f;
 		CamDist = 2.5f;
@@ -256,7 +257,7 @@ class ProductShowcase : public BaseProject {
 
 		showPos = 0;
 	}
-	
+
 	// Here you create your pipelines and Descriptor Sets!
 	void pipelinesAndDescriptorSetsInit() {
 		// This creates a new pipeline (with the current surface), using its shaders
@@ -264,7 +265,7 @@ class ProductShowcase : public BaseProject {
 		PObj.create();
 		POverlay.create();
 		PSkyBox.create();
-		
+
 		// Here you define the data set
 		DSPhone.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
@@ -280,10 +281,15 @@ class ProductShowcase : public BaseProject {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
 					{1, TEXTURE, 0, &TScreenMesh}
 			});
-		
+
 		DSCamera.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
 					{1, TEXTURE, 0, &TScreenMesh}
+			});
+
+		DSLens.init(this, &DSLObj, {
+				{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
+				{1, TEXTURE, 0, &TScreenMesh}
 			});
 
 		DSChip.init(this, &DSLObj, {
@@ -299,7 +305,7 @@ class ProductShowcase : public BaseProject {
 		DSSkyBox.init(this, &DSLSkyBox, {
 					{0, UNIFORM, sizeof(UniformBufferObject), nullptr},
 					{1, TEXTURE, 0, &TSkyBox}
-				});
+			});
 
 		DSBallLight.init(this, &DSLMesh, {
 					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
@@ -338,14 +344,14 @@ class ProductShowcase : public BaseProject {
 					{0, UNIFORM, sizeof(OverlayUniformBlock), nullptr},
 					{1, TEXTURE, 0, &TOverUI}
 			});
-		
+
 
 		DSGuboLight.init(this, &DSLGuboLight, {
 					{0, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr},
 					{1, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr},
 					{2, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr},
 					{3, UNIFORM, sizeof(GlobalUniformBufferObjectLight), nullptr}
-				});
+			});
 	}
 
 	// Here you destroy your pipelines and Descriptor Sets!
@@ -362,6 +368,7 @@ class ProductShowcase : public BaseProject {
 		DSFront.cleanup();
 		DSScreenMesh.cleanup();
 		DSCamera.cleanup();
+		DSLens.cleanup();
 		DSChip.cleanup();
 		DSFloor.cleanup();
 		DSSkyBox.cleanup();
@@ -393,12 +400,13 @@ class ProductShowcase : public BaseProject {
 		TOverCam.cleanup();
 		TOverJack.cleanup();
 		TOverUI.cleanup();
-		
+
 		// Cleanup models
 		MPhone.cleanup();
 		MFront.cleanup();
 		MScreenMesh.cleanup();
 		MCamera.cleanup();
+		MLens.cleanup();
 		MChip.cleanup();
 		MFloor.cleanup();
 		MSkyBox.cleanup();
@@ -408,7 +416,7 @@ class ProductShowcase : public BaseProject {
 		MOverCam.cleanup();
 		MOverJack.cleanup();
 		MOverUI.cleanup();
-		
+
 		// Cleanup descriptor set layouts
 		DSLMesh.cleanup();
 		DSLObj.cleanup();
@@ -418,26 +426,26 @@ class ProductShowcase : public BaseProject {
 
 
 		DSLGuboLight.cleanup();
-		
-		
+
+
 		// Destroies the pipelines
-		PMesh.destroy();		
+		PMesh.destroy();
 		PObj.destroy();
 		POverlay.destroy();
 		PSkyBox.destroy();
 	}
-	
+
 	// Here it is the creation of the command buffer:
 	// You send to the GPU all the objects you want to draw,
 	// with their buffers and textures
-	
+
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
 
 		PSkyBox.bind(commandBuffer);
 		MSkyBox.bind(commandBuffer);
 		DSSkyBox.bind(commandBuffer, PSkyBox, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
-					static_cast<uint32_t>(MSkyBox.indices.size()), 1, 0, 0, 0);
+			static_cast<uint32_t>(MSkyBox.indices.size()), 1, 0, 0, 0);
 
 		// sets global uniforms
 		DSGuboLight.bind(commandBuffer, PMesh, 0, currentImage);
@@ -471,7 +479,7 @@ class ProductShowcase : public BaseProject {
 		// DON'T DELETE
 		// vkCmdDrawIndexed(commandBuffer,
 		// 	static_cast<uint32_t>(MSpotlight.indices.size()), 1, 0, 0, 0);
-		
+
 
 		PObj.bind(commandBuffer);
 		MPhone.bind(commandBuffer);
@@ -493,6 +501,11 @@ class ProductShowcase : public BaseProject {
 		DSCamera.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MCamera.indices.size()), 1, 0, 0, 0);
+
+		MLens.bind(commandBuffer);
+		DSLens.bind(commandBuffer, PObj, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MLens.indices.size()), 1, 0, 0, 0);
 
 		MChip.bind(commandBuffer);
 		DSChip.bind(commandBuffer, PObj, 1, currentImage);
@@ -526,19 +539,19 @@ class ProductShowcase : public BaseProject {
 	// Very likely this will be where you will be writing the logic of your application.
 	void updateUniformBuffer(uint32_t currentImage) {
 		// Standard procedure to quit when the ESC key is pressed
-		if(glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
-		
+
 		// Integration with the timers and the controllers
-		
+
 		static auto startTime = std::chrono::high_resolution_clock::now();
 		static float lastTime = 0.0f;
-		
+
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>
-					(currentTime - startTime).count();
-		
+			(currentTime - startTime).count();
+
 		float deltaT = time - lastTime;
 		lastTime = time;
 
@@ -584,18 +597,23 @@ class ProductShowcase : public BaseProject {
 
 		if (Lpressed && Cpressed + Hpressed + Epressed == 0) {
 			showPos = 1;
-		} else if (Cpressed && Lpressed + Hpressed + Epressed == 0) {
+		}
+		else if (Cpressed && Lpressed + Hpressed + Epressed == 0) {
 			showPos = 2;
-		} else if (Hpressed && Lpressed + Cpressed + Epressed == 0) {
+		}
+		else if (Hpressed && Lpressed + Cpressed + Epressed == 0) {
 			showPos = 3;
-		} else if (Epressed && Lpressed + Cpressed + Hpressed == 0) {
+		}
+		else if (Epressed && Lpressed + Cpressed + Hpressed == 0) {
 			showPos = 4;
-		} else if (colorChange && Lpressed + Cpressed + Hpressed == 0) {
+		}
+		else if (colorChange && Lpressed + Cpressed + Hpressed == 0) {
 			if (phoneColor > 4.0f)
 				phoneColor = 1.0f;
-			else 
+			else
 				phoneColor += 1.0f;
-		} else {
+		}
+		else {
 			showPos = 0;
 		}
 
@@ -604,9 +622,9 @@ class ProductShowcase : public BaseProject {
 		C: 75 30
 		H: 90 60
 		*/
-		switch(showPos) {
-		  case 1: //lightning port
-		  	tra.x = 0.0f;
+		switch (showPos) {
+		case 1: //lightning port
+			tra.x = 0.0f;
 			tra.y = 1.0f;
 			tra.z = 1.25f;
 
@@ -620,22 +638,22 @@ class ProductShowcase : public BaseProject {
 			visible = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 
 			break;
-		  case 2: //camera
-		 	tra.x = 0.20f;
+		case 2: //camera
+			tra.x = 0.20f;
 			tra.y = 0.5f;
 			tra.z = 1.75f;
 
 			rot.x = glm::radians(90.0f);
 			rot.y = glm::radians(0.0f);
 			rot.z = glm::radians(180.0f);
-			
+
 			LightHorAngle = glm::radians(75.0f);
 			LightVertAngle = glm::radians(30.0f);
 
 			visible = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
 			break;
-		  case 3: //display
+		case 3: //display
 			tra.x = 0.0f;
 			tra.y = 1.0f;
 			tra.z = 0.75f;
@@ -649,11 +667,11 @@ class ProductShowcase : public BaseProject {
 
 			LightHorAngle = glm::radians(90.0f);
 			LightVertAngle = glm::radians(60.0f);
-			
+
 			visible = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
-			
+
 			break;
-		  case 4: //explosion
+		case 4: //explosion
 			tra.x = 0.0f;
 			tra.y = 1.0f;
 			tra.z = 0.0f;
@@ -665,10 +683,10 @@ class ProductShowcase : public BaseProject {
 			emit = 1.0f;
 
 			interSpace = 200.0f;
-		  	
+
 			break;
-		  default: // floating
-		  	tra.x = 0.0f;
+		default: // floating
+			tra.x = 0.0f;
 			tra.y = 1.0f + 0.2f * sin(time);
 			tra.z = 0.0f;
 
@@ -694,9 +712,9 @@ class ProductShowcase : public BaseProject {
 
 		currInterSpace = (1.0f - speedAnim + 0.06) * currInterSpace + (speedAnim - 0.06) * interSpace;
 
-		glm::mat4 staticRotation = 	glm::rotate(glm::mat4(1.0f), currRot.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
-									glm::rotate(glm::mat4(1.0f), currRot.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
-									glm::rotate(glm::mat4(1.0f), currRot.z, glm::vec3(0.0f, 0.0f, 1.0f));
+		glm::mat4 staticRotation = glm::rotate(glm::mat4(1.0f), currRot.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), currRot.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), currRot.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
 		glm::mat4 translateToCenter = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
@@ -719,13 +737,13 @@ class ProductShowcase : public BaseProject {
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
 
 		World = floating * glm::inverse(translateToCenter) * combinedRotation * scale * translateToCenter;*/
-		
+
 		currVisible = 0.8f * currVisible + 0.2f * visible;
 
 
 		uboOverJack.visible = currVisible.x; uboOverJack.Ar = Ar;
 		DSOverJack.map(currentImage, &uboOverJack, sizeof(uboOverJack), 0);
-		
+
 		uboOverCam.visible = currVisible.y; uboOverCam.Ar = Ar;
 		DSOverCam.map(currentImage, &uboOverCam, sizeof(uboOverCam), 0);
 
@@ -739,19 +757,19 @@ class ProductShowcase : public BaseProject {
 		const float farPlane = 100.0f;
 		const float rotSpeed = glm::radians(90.0f);
 		const float movSpeed = 1.0f;
-		
+
 		LightHorAngle += arrows.x * rotSpeed * deltaT;
-		if(LightVertAngle + arrows.y * rotSpeed * deltaT <= glm::radians(80.0f) &&
+		if (LightVertAngle + arrows.y * rotSpeed * deltaT <= glm::radians(80.0f) &&
 			LightVertAngle + arrows.y * rotSpeed * deltaT >= glm::radians(5.0f)) {
 			LightVertAngle += arrows.y * rotSpeed * deltaT;
 		}
 
 		currLightHorAngle = 0.9 * currLightHorAngle + 0.1 * LightHorAngle;
 		currLightVertAngle = 0.9 * currLightVertAngle + 0.1 * LightVertAngle;
-		
+
 		glm::mat4 Prj = glm::perspective(FOVy, Ar, nearPlane, farPlane);
 		Prj[1][1] *= -1;
-		glm::vec3 camTarget = glm::vec3(0,CamH,0);
+		glm::vec3 camTarget = glm::vec3(0, CamH, 0);
 
 		CamH += wasd.y * movSpeed * deltaT;
 
@@ -766,15 +784,15 @@ class ProductShowcase : public BaseProject {
 		else {
 			CamYaw = glm::round(CamYaw / glm::radians(360.0f)) * glm::radians(360.0f) + glm::radians(90.0f);
 		}
-		
+
 
 		currCamYaw = 0.9 * currCamYaw + 0.1 * CamYaw;
 
 		glm::vec3 camPos = camTarget +
-				CamDist * glm::vec3(cos(currCamYaw),
-										0.0f,
-										sin(currCamYaw));
-		glm::mat4 View = glm::lookAt(camPos, camTarget, glm::vec3(0,1,0));
+			CamDist * glm::vec3(cos(currCamYaw),
+				0.0f,
+				sin(currCamYaw));
+		glm::mat4 View = glm::lookAt(camPos, camTarget, glm::vec3(0, 1, 0));
 
 		float lightDist = 2.8f;
 
@@ -823,7 +841,7 @@ class ProductShowcase : public BaseProject {
 		uboPhone.nMat = glm::inverse(glm::transpose(World));
 		DSPhone.map(currentImage, &uboPhone, sizeof(uboPhone), 0);
 
-		
+
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.4f, 0.0f));
 
 		uboFront.amb = 0.025f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 1.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f; uboFront.baseColor = phoneColor;
@@ -834,7 +852,7 @@ class ProductShowcase : public BaseProject {
 		uboFront.nMat = glm::inverse(glm::transpose(World));
 		DSFront.map(currentImage, &uboFront, sizeof(uboFront), 0);
 
-		
+
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f, 0.0f));
 
 		uboScreenMesh.amb = 0.0f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 1.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f; uboScreenMesh.baseColor = 0.0f;
@@ -845,16 +863,26 @@ class ProductShowcase : public BaseProject {
 		uboScreenMesh.nMat = glm::inverse(glm::transpose(World));
 		DSScreenMesh.map(currentImage, &uboScreenMesh, sizeof(uboScreenMesh), 0);
 
-		
+
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * -0.4f, 0.0f));
 
-		uboCamera.amb = 0.025f; uboCamera.rho = 0.05f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f; uboCamera.baseColor = -1.0f;
+		uboCamera.amb = 0.025f; uboCamera.rho = 0.05f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f; uboCamera.baseColor = phoneColor;
 		uboCamera.sColor = glm::vec3(1.0f);
 
 		uboCamera.mvpMat = Prj * View * World;
 		uboCamera.mMat = World;
 		uboCamera.nMat = glm::inverse(glm::transpose(World));
 		DSCamera.map(currentImage, &uboCamera, sizeof(uboCamera), 0);
+
+		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * -0.6f, 0.0f));
+
+		uboLens.amb = 0.025f; uboLens.rho = 0.05f; uboLens.K = 0.05f; uboLens.F0 = 0.3f; uboLens.g = 1.5f; uboLens.beta = 2.0f; uboLens.emit = 0.0f; uboLens.baseColor = -1.0f;
+		uboLens.sColor = glm::vec3(1.0f);
+
+		uboLens.mvpMat = Prj * View * World;
+		uboLens.mMat = World;
+		uboLens.nMat = glm::inverse(glm::transpose(World));
+		DSLens.map(currentImage, &uboLens, sizeof(uboLens), 0);
 
 		World = glm::scale(phoneWorld, glm::vec3(30.0f));
 
@@ -867,7 +895,7 @@ class ProductShowcase : public BaseProject {
 		DSChip.map(currentImage, &uboChip, sizeof(uboChip), 0);
 
 		World = glm::scale(glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f + 4.0f, 0.0f)), glm::vec3(132.7f));
-		
+
 		uboScreen.amb = 0.0f; uboScreen.rho = 0.05f; uboScreen.K = 0.0f; uboScreen.F0 = 0.3f; uboScreen.g = 1.5f; uboScreen.beta = 2.0f; uboScreen.emit = currEmit; uboScreen.baseColor = 0.0f;
 		uboScreen.sColor = glm::vec3(1.0f);
 
@@ -906,7 +934,7 @@ class ProductShowcase : public BaseProject {
 		uboBallLight.nMat = glm::inverse(glm::transpose(World));
 		DSBallLight.map(currentImage, &uboBallLight, sizeof(uboBallLight), 0);
 
-		
+
 		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(glm::radians(120.0f) + currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(glm::radians(120.0f) + currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.05f));
 
 		uboBallLight2.amb = 0.0f; uboBallLight2.gamma = 180.0f; uboBallLight2.sColor = glm::vec3(1.0f);
@@ -922,26 +950,27 @@ class ProductShowcase : public BaseProject {
 		uboBallLight3.mMat = World;
 		uboBallLight3.nMat = glm::inverse(glm::transpose(World));
 		DSBallLight3.map(currentImage, &uboBallLight3, sizeof(uboBallLight3), 0);
-	}	
+	}
 
 	void createFloor(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx);
 	void createScreen(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx, float textureHeight, float textureWidth);
-	void createSphereMesh(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx);
-	void createBox(std::vector<VertexMesh> &vDef, std::vector<uint32_t> &vIdx, float height, float width, float thickness);
+	void createSphereMesh(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx);
+	void createBox(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx, float height, float width, float thickness);
 };
 
 #include "objectGenerator.hpp"
 
 // This is the main: probably you do not need to touch this!
 int main() {
-    ProductShowcase app;
+	ProductShowcase app;
 
-    try {
-        app.run();
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
+	try {
+		app.run();
+	}
+	catch (const std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
 
-    return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
