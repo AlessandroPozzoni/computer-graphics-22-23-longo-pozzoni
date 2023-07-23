@@ -833,7 +833,7 @@ protected:
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * (-0.2f), 0.0f));
 
-		uboPhone.amb = 0.025f; uboPhone.rho = 0.05f; uboPhone.K = 0.05f; uboPhone.F0 = 0.3f; uboPhone.g = 1.5f; uboPhone.beta = 2.0f; uboPhone.emit = 0.0f; uboPhone.baseColor = phoneColor;
+		uboPhone.amb = 0.025f; uboPhone.rho = 0.05f; uboPhone.K = 0.05f; uboPhone.F0 = 0.3f; uboPhone.g = 3.5f; uboPhone.beta = 2.0f; uboPhone.emit = 0.0f; uboPhone.baseColor = phoneColor;
 		uboPhone.sColor = glm::vec3(1.0f);
 
 		uboPhone.mvpMat = Prj * View * World;
@@ -844,7 +844,7 @@ protected:
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.4f, 0.0f));
 
-		uboFront.amb = 0.025f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 1.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f; uboFront.baseColor = phoneColor;
+		uboFront.amb = 0.025f; uboFront.rho = 0.05f; uboFront.K = 0.05f; uboFront.F0 = 0.3f; uboFront.g = 3.5f; uboFront.beta = 2.0f; uboFront.emit = 0.0f; uboFront.baseColor = phoneColor;
 		uboFront.sColor = glm::vec3(1.0f);
 
 		uboFront.mvpMat = Prj * View * World;
@@ -855,7 +855,7 @@ protected:
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f, 0.0f));
 
-		uboScreenMesh.amb = 0.0f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 1.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f; uboScreenMesh.baseColor = 0.0f;
+		uboScreenMesh.amb = 0.0f; uboScreenMesh.rho = 0.05f; uboScreenMesh.K = 0.05f; uboScreenMesh.F0 = 0.3f; uboScreenMesh.g = 3.5f; uboScreenMesh.beta = 2.0f; uboScreenMesh.emit = 0.0f; uboScreenMesh.baseColor = 0.0f;
 		uboScreenMesh.sColor = glm::vec3(1.0f);
 
 		uboScreenMesh.mvpMat = Prj * View * World;
@@ -866,7 +866,7 @@ protected:
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * -0.4f, 0.0f));
 
-		uboCamera.amb = 0.025f; uboCamera.rho = 0.3f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 1.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f; uboCamera.baseColor = phoneColor;
+		uboCamera.amb = 0.025f; uboCamera.rho = 0.2f; uboCamera.K = 0.05f; uboCamera.F0 = 0.3f; uboCamera.g = 3.5f; uboCamera.beta = 2.0f; uboCamera.emit = 0.0f; uboCamera.baseColor = phoneColor;
 		uboCamera.sColor = glm::vec3(1.0f);
 
 		uboCamera.mvpMat = Prj * View * World;
@@ -876,7 +876,7 @@ protected:
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * -0.6f, 0.0f));
 
-		uboLens.amb = 0.025f; uboLens.rho = 0.05f; uboLens.K = 0.05f; uboLens.F0 = 0.3f; uboLens.g = 1.5f; uboLens.beta = 2.0f; uboLens.emit = 0.0f; uboLens.baseColor = -1.0f;
+		uboLens.amb = 0.025f; uboLens.rho = 0.05f; uboLens.K = 0.05f; uboLens.F0 = 0.3f; uboLens.g = 3.5f; uboLens.beta = 2.0f; uboLens.emit = 0.0f; uboLens.baseColor = -1.0f;
 		uboLens.sColor = glm::vec3(1.0f);
 
 		uboLens.mvpMat = Prj * View * World;
@@ -886,7 +886,7 @@ protected:
 
 		World = glm::scale(phoneWorld, glm::vec3(30.0f));
 
-		uboChip.amb = 0.025f; uboChip.rho = 0.2f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 1.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f; uboChip.baseColor = 0.0f;
+		uboChip.amb = 0.025f; uboChip.rho = 0.2f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 3.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f; uboChip.baseColor = 0.0f;
 		uboChip.sColor = glm::vec3(1.0f);
 
 		uboChip.mvpMat = Prj * View * World;
@@ -896,7 +896,7 @@ protected:
 
 		World = glm::scale(glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * 0.2f + 4.0f, 0.0f)), glm::vec3(132.7f));
 
-		uboScreen.amb = 0.0f; uboScreen.rho = 0.05f; uboScreen.K = 0.0f; uboScreen.F0 = 0.3f; uboScreen.g = 1.5f; uboScreen.beta = 2.0f; uboScreen.emit = currEmit; uboScreen.baseColor = 0.0f;
+		uboScreen.amb = 0.0f; uboScreen.rho = 0.05f; uboScreen.K = 0.0f; uboScreen.F0 = 0.3f; uboScreen.g = 3.5f; uboScreen.beta = 2.0f; uboScreen.emit = currEmit; uboScreen.baseColor = 0.0f;
 		uboScreen.sColor = glm::vec3(1.0f);
 
 		uboScreen.mvpMat = Prj * View * World;
