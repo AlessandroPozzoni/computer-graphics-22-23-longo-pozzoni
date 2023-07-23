@@ -927,7 +927,7 @@ protected:
 
 		glm::vec3 posL = glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle));
 		
-		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(posL)), glm::vec3(0.05f));
+		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(posL)), glm::vec3(0.08f));
 
 		uboBallLight.amb = 0.0f; uboBallLight.gamma = 180.0f; uboBallLight.sColor = glm::vec3(1.0f);
 		uboBallLight.mvpMat = Prj * View * World;
@@ -960,7 +960,7 @@ protected:
 
 		posL = glm::vec3(lightDist * cos(glm::radians(120.0f) + currLightHorAngle) * cos(currLightVertAngle), lightDist* sin(currLightVertAngle), lightDist* sin(glm::radians(120.0f) + currLightHorAngle)* cos(currLightVertAngle));
 
-		World = glm::scale(glm::translate(glm::mat4(1.0f), posL), glm::vec3(0.05f));
+		World = glm::scale(glm::translate(glm::mat4(1.0f), posL), glm::vec3(0.08f));
 
 		uboBallLight2.amb = 0.0f; uboBallLight2.gamma = 180.0f; uboBallLight2.sColor = glm::vec3(1.0f);
 		uboBallLight2.mvpMat = Prj * View * World;
@@ -988,7 +988,7 @@ protected:
 		
 		posL = glm::vec3(lightDist * cos(glm::radians(240.0f) + currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(glm::radians(240.0f) + currLightHorAngle) * cos(currLightVertAngle));
 
-		World = glm::scale(glm::translate(glm::mat4(1.0f), posL), glm::vec3(0.05f));
+		World = glm::scale(glm::translate(glm::mat4(1.0f), posL), glm::vec3(0.08f));
 
 		uboBallLight3.amb = 0.0f; uboBallLight3.gamma = 180.0f; uboBallLight3.sColor = glm::vec3(1.0f);
 		uboBallLight3.mvpMat = Prj * View * World;
