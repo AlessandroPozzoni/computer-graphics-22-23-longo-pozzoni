@@ -7,6 +7,8 @@ layout(location = 2) in vec2 fragUV;
 
 layout(location = 0) out vec4 outColor;
 
+// Direct light + three spot lights
+
 layout(set = 0, binding = 0) uniform GlobalUniformBufferObject {
     vec3 lightPos;
     vec3 lightDir;
@@ -39,6 +41,8 @@ layout(set = 0, binding = 3) uniform GlobalUniformBufferObject3 {
     vec3 eyePos;
 } gubo3;
 
+// Uniform buffer object
+
 layout(set = 1, binding = 0) uniform UniformBufferObject {
 	float amb;
 	float gamma;
@@ -48,10 +52,19 @@ layout(set = 1, binding = 0) uniform UniformBufferObject {
 	mat4 nMat;
 } ubo;
 
+// Texture
+
 layout(set = 1, binding = 1) uniform sampler2D tex;
+
+// Fixed parameters for spot light
 
 const float beta = 5.0f;
 const float g = 5.0f;
+
+// Fixed parameters for spot light
+
+const float cosout = 0.90;
+const float cosin  = 0.95;
 
 void main() {
 	vec3 N = normalize(fragNorm);				// surface normal
@@ -63,10 +76,7 @@ void main() {
 	vec3 MA = albedo * ubo.amb;
 	vec3 LA1 = gubo1.AmbLightColor;
 	
-	// Write the shader here
-
-	float cosout = 0.90;
-	float cosin  = 0.95;
+	// Spot light
 
 	float clamping1 = clamp((dot(normalize(gubo1.lightPos - fragPos), gubo1.lightDir) - cosout) / (cosin - cosout), 0.0f, 1.0f);
 
@@ -75,9 +85,13 @@ void main() {
 
 	vec3 L1 = lightDir1;
 
+	// Blinn reflection
+
 	vec3 Diff1 = MD * clamp(dot(L1,N),0.0f,1.0f);
 	vec3 Spec1 = vec3(pow(clamp(dot(N, normalize(L1 + V1)),0.0,1.0), ubo.gamma));
 	vec3 Ambient1 = LA1 * MA;
+
+	// Handle emission
 
 	vec3 ME = vec3(0.0f);
 
@@ -87,12 +101,9 @@ void main() {
 
 
 
-	vec3 V2 = normalize(gubo2.eyePos - fragPos);	// viewer direction
-	//vec3 L2 = normalize(gubo2.lightDir);			// light direction
+	vec3 V2 = normalize(gubo2.eyePos - fragPos);
 
 	vec3 LA2 = gubo2.AmbLightColor;
-	
-	// Write the shader here
 
 	float clamping2 = clamp((dot(normalize(gubo2.lightPos - fragPos), gubo2.lightDir) - cosout) / (cosin - cosout), 0.0f, 1.0f);
 
@@ -107,12 +118,9 @@ void main() {
 	
 
 
-	vec3 V3 = normalize(gubo3.eyePos - fragPos);	// viewer direction
-	//vec3 L2 = normalize(gubo3.lightDir);			// light direction
+	vec3 V3 = normalize(gubo3.eyePos - fragPos);
 
 	vec3 LA3 = gubo3.AmbLightColor;
-	
-	// Write the shader here
 
 	float clamping3 = clamp((dot(normalize(gubo3.lightPos - fragPos), gubo3.lightDir) - cosout) / (cosin - cosout), 0.0f, 1.0f);
 
@@ -130,6 +138,8 @@ void main() {
 	vec3 V = normalize(gubo.eyePos - fragPos);
 	vec3 LA = gubo1.AmbLightColor;
 
+	// Direct light
+
 	vec3 lightDir = vec3(gubo.lightDir);
 	vec3 lightColor = vec3(gubo.lightColor);
 
@@ -139,7 +149,8 @@ void main() {
 	vec3 Spec = vec3(pow(clamp(dot(N, normalize(L + V)),0.0,1.0), ubo.gamma));
 	vec3 Ambient = LA * MA;
 	
-	
+	// Sum of the BRDF
+
 	outColor =
 		vec4(clamp((Diff + Spec) * lightColor.rgb + Ambient,0.0,1.0), 1.0f) +
 		vec4(clamp(clamp((Diff1 + Spec1) * lightColor1.rgb + Ambient1,0.0,1.0) + ME, 0.0f, 1.0f), 1.0f) +

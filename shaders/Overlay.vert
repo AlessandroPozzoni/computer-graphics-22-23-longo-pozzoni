@@ -12,6 +12,7 @@ layout(location = 1) in vec2 inUV;
 layout(location = 0) out vec2 outUV;
 
 void main() {
+	// if Ar < 16:9 the overlay gets clipped outside the window, otherwise the overlay has fixed width
 	if(ubo.Ar >= 16.0f / 9.0f) {
 		gl_Position = vec4(vec2((16.0f / 9.0f / ubo.Ar), 1.0f) * inPosition, 0.5f, 1.0f);
 		outUV = inUV;

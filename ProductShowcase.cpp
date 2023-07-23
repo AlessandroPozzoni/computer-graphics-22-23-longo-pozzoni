@@ -1,5 +1,6 @@
 #include "Starter.hpp"
 
+// Uniform used for Blinn reflection
 struct MeshUniformBlock {
 	alignas(4) float amb;
 	alignas(4) float gamma;
@@ -9,12 +10,14 @@ struct MeshUniformBlock {
 	alignas(16) glm::mat4 nMat;
 };
 
+// Uniform used for skybox
 struct UniformBufferObject {
 	alignas(16) glm::mat4 mvpMat;
 	alignas(16) glm::mat4 mMat;
 	alignas(16) glm::mat4 nMat;
 };
 
+// Uniform used for CookTorrance
 struct UniformBufferObjectOBJ {
 	alignas(4) float amb;
 	alignas(4) float rho;
@@ -31,11 +34,13 @@ struct UniformBufferObjectOBJ {
 	alignas(16) glm::mat4 nMat;
 };
 
+// Uniform used for overlay
 struct OverlayUniformBlock {
 	alignas(4) float visible;
 	alignas(4) float Ar;
 };
 
+// Global uniform
 struct GlobalUniformBufferObjectLight {
 	alignas(16) glm::vec3 lightPos;
 	alignas(16) glm::vec3 lightDir;
@@ -86,9 +91,9 @@ protected:
 		DSScreen, DSPhone, DSFront, DSScreenMesh, DSCamera, DSLens, DSChip,
 		DSOverCam, DSOverJack, DSOverUI;
 
-	Texture TPhone, TScreenMesh, TFloor, TSkyBox, TBallLight, TScreen, TChip, TOverCam, TOverJack, TOverUI;
+	Texture TPhone, TScreenMesh, TFloor, TSkyBox, TScreen, TChip, TOverCam, TOverJack, TOverUI;
 
-
+	// Uniforms
 	MeshUniformBlock uboFloor, uboBallLight, uboBallLight2, uboBallLight3, uboSpotlight, uboSpotlight2, uboSpotlight3;
 	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera, uboLens, uboChip;
 
@@ -108,10 +113,10 @@ protected:
 	void setWindowParameters() {
 		// window size, titile and initial background
 		windowWidth = 800;
-		windowHeight = 600;
-		windowTitle = "New iPhone mega power plasss";
+		windowHeight = 450;
+		windowTitle = "Product Showcase";
 		windowResizable = GLFW_TRUE;
-		initialBackgroundColor = { 0.0f, 0.000f, 0.00f, 1.0f };
+		initialBackgroundColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 		// Descriptor pool sizes
 		uniformBlocksInPool = 100;
@@ -126,11 +131,10 @@ protected:
 		Ar = (float)w / (float)h;
 	}
 
-	// Here you load and setup all your Vulkan Models and Texutures.
-	// Here you also create your Descriptor set layouts and load the shaders for the pipelines
+
 	void localInit() {
 
-		// Descriptor Layouts [what will be passed to the shaders]
+		// Descriptor Layouts
 		DSLMesh.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
@@ -146,6 +150,7 @@ protected:
 					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT}
 			});
 
+		// One uniform for direct light, three for spot lights
 		DSLGuboLight.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
 					{1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS},
@@ -160,10 +165,8 @@ protected:
 
 		// Vertex descriptors
 		VMesh.init(this, {
-			// this array contains the bindings
 			{0, sizeof(VertexMesh), VK_VERTEX_INPUT_RATE_VERTEX}
 			}, {
-				// this array contains the location
 				{0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexMesh, pos),
 					   sizeof(glm::vec3), POSITION},
 				{0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexMesh, norm),
@@ -181,9 +184,11 @@ protected:
 					 sizeof(glm::vec2), UV}
 			});
 
-
+		// Pipeline initialization
 		PMesh.init(this, &VMesh, "shaders/MeshVert.spv", "shaders/MeshFrag.spv", { &DSLGuboLight, &DSLMesh });
 		PObj.init(this, &VMesh, "shaders/CookTorrVert.spv", "shaders/CookTorrFrag.spv", { &DSLGuboLight, &DSLObj });
+		PObj.setAdvancedFeatures(VK_COMPARE_OP_LESS, VK_POLYGON_MODE_FILL,
+			VK_CULL_MODE_BACK_BIT, true);
 		POverlay.init(this, &VOverlay, "shaders/OverlayVert.spv", "shaders/OverlayFrag.spv", { &DSLOverlay });
 		POverlay.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
 			VK_CULL_MODE_NONE, true);
@@ -192,7 +197,8 @@ protected:
 		PSkyBox.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
 			VK_CULL_MODE_BACK_BIT, false);
 
-		// Models, textures and Descriptors (values assigned to the uniforms)
+		
+		// Models, textures and Descriptors
 
 		// Create models
 		MPhone.init(this, &VMesh, "models/back.obj", OBJ);
@@ -227,11 +233,9 @@ protected:
 		MOverlay.initMesh(this, &VOverlay);
 
 		// Create the textures
-		// The second parameter is the file name
 		TPhone.init(this, "textures/Solid_red.png");
 		TScreenMesh.init(this, "textures/Black.png");
 		TFloor.init(this, "textures/Grey.png");
-		TBallLight.init(this, "textures/Grey.png");
 		TScreen.init(this, "textures/iphone_screen_new.png");
 		TChip.init(this, "textures/Chip.png");
 		TOverCam.init(this, "textures/overlay_camera.png");
@@ -250,13 +254,13 @@ protected:
 
 	// Here you create your pipelines and Descriptor Sets!
 	void pipelinesAndDescriptorSetsInit() {
-		// This creates a new pipeline (with the current surface), using its shaders
+		// Pipeline creation
 		PMesh.create();
 		PObj.create();
 		POverlay.create();
 		PSkyBox.create();
 
-		// Here you define the data set
+		// Dataset initialization
 		DSPhone.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
 					{1, TEXTURE, 0, &TPhone}
@@ -299,17 +303,17 @@ protected:
 
 		DSBallLight.init(this, &DSLMesh, {
 					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
-					{1, TEXTURE, 0, &TBallLight}
+					{1, TEXTURE, 0, &TFloor}
 			});
 
 		DSBallLight2.init(this, &DSLMesh, {
 					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
-					{1, TEXTURE, 0, &TBallLight}
+					{1, TEXTURE, 0, &TFloor}
 			});
 
 		DSBallLight3.init(this, &DSLMesh, {
 					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
-					{1, TEXTURE, 0, &TBallLight}
+					{1, TEXTURE, 0, &TFloor}
 			});
 
 		DSSpotlight.init(this, &DSLMesh, {
@@ -354,8 +358,8 @@ protected:
 			});
 	}
 
-	// Here you destroy your pipelines and Descriptor Sets!
-	// All the object classes defined in Starter.hpp have a method .cleanup() for this purpose
+	
+
 	void pipelinesAndDescriptorSetsCleanup() {
 		// Cleanup pipelines
 		PMesh.cleanup();
@@ -396,7 +400,6 @@ protected:
 		TScreenMesh.cleanup();
 		TFloor.cleanup();
 		TSkyBox.cleanup();
-		TBallLight.cleanup();
 		TScreen.cleanup();
 		TChip.cleanup();
 		TOverCam.cleanup();
@@ -423,39 +426,36 @@ protected:
 		DSLOverlay.cleanup();
 		DSLSkyBox.cleanup();
 
-
-
 		DSLGuboLight.cleanup();
 
 
-		// Destroies the pipelines
+		// Destroys the pipelines
 		PMesh.destroy();
 		PObj.destroy();
 		POverlay.destroy();
 		PSkyBox.destroy();
 	}
 
-	// Here it is the creation of the command buffer:
-	// You send to the GPU all the objects you want to draw,
-	// with their buffers and textures
+
 
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
 
+		// binds the pipeline
 		PSkyBox.bind(commandBuffer);
+		// binds the model
 		MSkyBox.bind(commandBuffer);
+		// binds the dataset
 		DSSkyBox.bind(commandBuffer, PSkyBox, 0, currentImage);
+		// record the drawing command in the command buffer
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MSkyBox.indices.size()), 1, 0, 0, 0);
 
 		// sets global uniforms
 		DSGuboLight.bind(commandBuffer, PMesh, 0, currentImage);
-		// binds the pipeline
+		
 		PMesh.bind(commandBuffer);
-		// binds the model
 		MFloor.bind(commandBuffer);
-		// binds the dataset
 		DSFloor.bind(commandBuffer, PMesh, 1, currentImage);
-		// record the drawing command in the command buffer
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MFloor.indices.size()), 1, 0, 0, 0);
 
@@ -464,11 +464,9 @@ protected:
 		DSBallLight.bind(commandBuffer, PMesh, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MBallLight.indices.size()), 1, 0, 0, 0);
-
 		DSBallLight2.bind(commandBuffer, PMesh, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MBallLight.indices.size()), 1, 0, 0, 0);
-
 		DSBallLight3.bind(commandBuffer, PMesh, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MBallLight.indices.size()), 1, 0, 0, 0);
@@ -478,11 +476,9 @@ protected:
 		DSSpotlight.bind(commandBuffer, PMesh, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MSpotlight.indices.size()), 1, 0, 0, 0);
-		
 		DSSpotlight2.bind(commandBuffer, PMesh, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MSpotlight.indices.size()), 1, 0, 0, 0);
-		
 		DSSpotlight3.bind(commandBuffer, PMesh, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MSpotlight.indices.size()), 1, 0, 0, 0);
@@ -493,62 +489,51 @@ protected:
 		DSPhone.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MPhone.indices.size()), 1, 0, 0, 0);
-
 		MFront.bind(commandBuffer);
 		DSFront.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MFront.indices.size()), 1, 0, 0, 0);
-
 		MScreenMesh.bind(commandBuffer);
 		DSScreenMesh.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MScreenMesh.indices.size()), 1, 0, 0, 0);
-
 		MCamera.bind(commandBuffer);
 		DSCamera.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MCamera.indices.size()), 1, 0, 0, 0);
-
 		MLens.bind(commandBuffer);
 		DSLens.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MLens.indices.size()), 1, 0, 0, 0);
-
 		MChip.bind(commandBuffer);
 		DSChip.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MChip.indices.size()), 1, 0, 0, 0);
-
 		MScreen.bind(commandBuffer);
 		DSScreen.bind(commandBuffer, PObj, 1, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MScreen.indices.size()), 1, 0, 0, 0);
+
 
 		POverlay.bind(commandBuffer);
 		MOverlay.bind(commandBuffer);
 		DSOverCam.bind(commandBuffer, POverlay, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MOverlay.indices.size()), 1, 0, 0, 0);
-
 		DSOverJack.bind(commandBuffer, POverlay, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MOverlay.indices.size()), 1, 0, 0, 0);
-
 		DSOverUI.bind(commandBuffer, POverlay, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MOverlay.indices.size()), 1, 0, 0, 0);
 
 	}
 
-	// Here is where you update the uniforms.
-	// Very likely this will be where you will be writing the logic of your application.
+	
 	void updateUniformBuffer(uint32_t currentImage) {
-		// Standard procedure to quit when the ESC key is pressed
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
-
-		// Integration with the timers and the controllers
 
 		static auto startTime = std::chrono::high_resolution_clock::now();
 		static float lastTime = 0.0f;
@@ -560,6 +545,7 @@ protected:
 		float deltaT = time - lastTime;
 		lastTime = time;
 
+		// Variables used for animations
 		glm::mat4 translation = glm::mat4(1.0f);
 		glm::mat4 scaling = glm::mat4(1.0f);
 		glm::mat4 rotation = glm::mat4(1.0f);
@@ -574,45 +560,48 @@ protected:
 		int Epressed;
 		bool Spacepressed = false;
 		static bool SpaceWasPress = false;
-		glm::vec3 tra;
-		glm::vec3 rot;
-		static glm::vec3 currTra = glm::vec3(0.0f);
-		static glm::vec3 currRot = glm::vec3(0.0f);
-		float contRotSpeed;
+		glm::vec3 tra; // Target translation
+		glm::vec3 rot; // Target rotation
+		static glm::vec3 currTra = glm::vec3(0.0f); // Current translation
+		static glm::vec3 currRot = glm::vec3(0.0f); // Current rotation
 
-		float emit = 0;
-		static float currEmit = 0.0f;
+		float emit = 0; // Emission
+		static float currEmit = 0.0f; // Current emission
 
-		float interSpace = 0;
-		static float currInterSpace = 0.0f;
+		float interSpace = 0; // Target space between component
+		static float currInterSpace = 0.0f; // Current space between component
 
-		static float currCamYaw = glm::radians(90.0f);
-		static float currLightHorAngle = glm::radians(90.0f);
-		static float currLightVertAngle = glm::radians(50.0f);
+		static float currCamYaw = glm::radians(90.0f); // Current camera Yaw
+		static float currLightHorAngle = glm::radians(90.0f); // Current light horizontal angle
+		static float currLightVertAngle = glm::radians(50.0f); // Current light vertical angle
 
 		static float phoneColor = 1.0f;
 
 		glm::vec4 visible = glm::vec4(0.0f);
 		static glm::vec4 currVisible = glm::vec4(0.0f);
 
+		// Retrieve button values and mouse values
 		getInteraction(mouse, arrows, wasd, Lpressed, Cpressed, Hpressed, Epressed, Spacepressed);
 
+		// Debounce of spacebar
 		bool colorChange = (SpaceWasPress && (!Spacepressed));
 		SpaceWasPress = Spacepressed;
 
+		// State definition
 		if (Lpressed && Cpressed + Hpressed + Epressed == 0) {
-			showPos = 1;
+			showPos = 1; // Lightning port
 		}
 		else if (Cpressed && Lpressed + Hpressed + Epressed == 0) {
-			showPos = 2;
+			showPos = 2; // Camera
 		}
 		else if (Hpressed && Lpressed + Cpressed + Epressed == 0) {
-			showPos = 3;
+			showPos = 3; // Display
 		}
 		else if (Epressed && Lpressed + Cpressed + Hpressed == 0) {
-			showPos = 4;
+			showPos = 4; // Explosion
 		}
-		else if (colorChange && Lpressed + Cpressed + Hpressed == 0) {
+		else if (colorChange) { 
+			// Changing color
 			if (phoneColor > 4.0f)
 				phoneColor = 1.0f;
 			else
@@ -622,13 +611,9 @@ protected:
 			showPos = 0;
 		}
 
-		/*
-		L: 90 35
-		C: 75 30
-		H: 90 60
-		*/
+		// State implementation
 		switch (showPos) {
-		case 1: //lightning port
+		case 1: // Lightning port
 			tra.x = 0.0f;
 			tra.y = 1.0f;
 			tra.z = 1.25f;
@@ -643,7 +628,7 @@ protected:
 			visible = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
 
 			break;
-		case 2: //camera
+		case 2: // Camera
 			tra.x = 0.20f;
 			tra.y = 0.5f;
 			tra.z = 1.75f;
@@ -658,7 +643,7 @@ protected:
 			visible = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
 			break;
-		case 3: //display
+		case 3: // Display
 			tra.x = 0.0f;
 			tra.y = 1.0f;
 			tra.z = 0.75f;
@@ -676,7 +661,7 @@ protected:
 			visible = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
 
 			break;
-		case 4: //explosion
+		case 4: // Explosion
 			tra.x = 0.0f;
 			tra.y = 1.0f;
 			tra.z = 0.0f;
@@ -690,7 +675,7 @@ protected:
 			interSpace = 200.0f;
 
 			break;
-		default: // floating
+		default: // Floating
 			tra.x = 0.0f;
 			tra.y = 1.0f + 0.2f * sin(time);
 			tra.z = 0.0f;
@@ -717,32 +702,18 @@ protected:
 
 		currInterSpace = (1.0f - speedAnim + 0.06) * currInterSpace + (speedAnim - 0.06) * interSpace;
 
-		glm::mat4 staticRotation = glm::rotate(glm::mat4(1.0f), currRot.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
+		// Building world matrix for phone components
+		rotation = glm::rotate(glm::mat4(1.0f), currRot.x, glm::vec3(1.0f, 0.0f, 0.0f)) *
 			glm::rotate(glm::mat4(1.0f), currRot.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
 			glm::rotate(glm::mat4(1.0f), currRot.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
-		glm::mat4 translateToCenter = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-
-		rotation = glm::inverse(translateToCenter) * staticRotation * translateToCenter;
-
 		translation = glm::translate(glm::mat4(1.0f), currTra);
-
 
 		scaling = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
 
 		phoneWorld = translation * rotation * scaling;
 
-		/*glm::mat4 staticRotation = glm::rotate(glm::mat4(1.0f), glm::radians(-20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		glm::mat4 continuousRotation = glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 combinedRotation = continuousRotation * staticRotation;
-
-		glm::mat4 translateToCenter = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
-		glm::mat4 floating = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f + 0.2f * sin(time), 0.0f));
-
-		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
-
-		World = floating * glm::inverse(translateToCenter) * combinedRotation * scale * translateToCenter;*/
-
+		// Updating overlay
 		currVisible = 0.8f * currVisible + 0.2f * visible;
 
 
@@ -755,14 +726,14 @@ protected:
 		uboOverUI.visible = currVisible.z; uboOverUI.Ar = Ar;
 		DSOverUI.map(currentImage, &uboOverUI, sizeof(uboOverUI), 0);
 
-		// Parameters
-		// Camera FOV-y, Near Plane and Far Plane
+		// Parameters for camera
 		const float FOVy = glm::radians(45.0f);
 		const float nearPlane = 0.1f;
 		const float farPlane = 100.0f;
 		const float rotSpeed = glm::radians(90.0f);
 		const float movSpeed = 1.0f;
 
+		// Update lights' angles
 		LightHorAngle += arrows.x * rotSpeed * deltaT;
 		if (LightVertAngle + arrows.y * rotSpeed * deltaT <= glm::radians(80.0f) &&
 			LightVertAngle + arrows.y * rotSpeed * deltaT >= glm::radians(5.0f)) {
@@ -772,6 +743,7 @@ protected:
 		currLightHorAngle = 0.9 * currLightHorAngle + 0.1 * LightHorAngle;
 		currLightVertAngle = 0.9 * currLightVertAngle + 0.1 * LightVertAngle;
 
+		// Update of camera position and orientation
 		glm::mat4 Prj = glm::perspective(FOVy, Ar, nearPlane, farPlane);
 		Prj[1][1] *= -1;
 		glm::vec3 camTarget = glm::vec3(0, CamH, 0);
@@ -797,9 +769,12 @@ protected:
 				sin(currCamYaw));
 		glm::mat4 View = glm::lookAt(camPos, camTarget, glm::vec3(0, 1, 0));
 
-		float lightDist = 2.8f;
 
-		// Three spotlights + direct light
+
+
+
+		// Direct light + three spot lights
+		float lightDist = 2.8f;
 
 		gubo.lightPos = glm::normalize(glm::vec3(100.0f * sin(glm::radians(-33.0f)), 12.0f, 100.0f * cos(glm::radians(-33.0f))));
 		gubo.lightDir = -gubo.lightPos;
@@ -832,6 +807,7 @@ protected:
 		DSGuboLight.map(currentImage, &guboL2, sizeof(guboL2), 2);
 		DSGuboLight.map(currentImage, &guboL3, sizeof(guboL3), 3);
 
+		// Phone components
 		glm::mat4 World = glm::mat4(1.0f);
 
 		World = glm::translate(phoneWorld, glm::vec3(0.0f, currInterSpace * (-0.2f), 0.0f));
@@ -907,6 +883,8 @@ protected:
 		uboScreen.nMat = glm::inverse(glm::transpose(World));
 		DSScreen.map(currentImage, &uboScreen, sizeof(uboScreen), 0);
 
+
+		// Floor
 		World = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 
 		uboFloor.amb = 0.05f; uboFloor.gamma = 60.0f; uboFloor.sColor = glm::vec3(1.0f);
@@ -915,6 +893,8 @@ protected:
 		uboFloor.nMat = glm::inverse(glm::transpose(World));
 		DSFloor.map(currentImage, &uboFloor, sizeof(uboFloor), 0);
 
+
+		// Skybox
 		World = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f));
 
 		skyBubo.mvpMat = Prj * View * World;
@@ -922,7 +902,7 @@ protected:
 		skyBubo.nMat = glm::mat4(1.0f);
 		DSSkyBox.map(currentImage, &skyBubo, sizeof(skyBubo), 0);
 
-
+		// 3 * (Ball light + spotlight)
 		glm::vec3 posL = glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle));
 		
 		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(posL)), glm::vec3(0.08f));
@@ -933,7 +913,7 @@ protected:
 		uboBallLight.nMat = glm::inverse(glm::transpose(World));
 		DSBallLight.map(currentImage, &uboBallLight, sizeof(uboBallLight), 0);
 
-	
+		// Retrieve spotlight orientation from direction position_of_light --> position_of_phone
 		glm::vec3 direction = glm::normalize(currTra - posL);
 
 		glm::vec3 rotSL = glm::vec3(0.0f);
@@ -1013,6 +993,7 @@ protected:
 		DSSpotlight3.map(currentImage, &uboSpotlight3, sizeof(uboSpotlight3), 0);
 	}
 
+	// Functions to generate meshes manually
 	void createFloor(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx);
 	void createScreen(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx, float textureHeight, float textureWidth);
 	void createSphereMesh(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx);

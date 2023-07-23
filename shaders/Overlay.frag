@@ -13,6 +13,7 @@ layout(location = 0) out vec4 outColor;
 layout(binding = 1) uniform sampler2D tex;
 
 void main() {
+	// Handles visibility and renders overlay
 	vec4 color = texture(tex, fragUV).rgba;
 	color.a = color.a * ubo.visible;
 	outColor = color.rgba;	// output color
