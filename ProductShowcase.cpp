@@ -776,8 +776,6 @@ protected:
 		Prj[1][1] *= -1;
 		glm::vec3 camTarget = glm::vec3(0, CamH, 0);
 
-		CamH += wasd.y * movSpeed * deltaT;
-
 		if (showPos == 4 || showPos == 0) {
 			if (wasd.x != 0) {
 				CamYaw -= wasd.x * rotSpeed * deltaT;
@@ -891,7 +889,7 @@ protected:
 
 		World = glm::scale(phoneWorld, glm::vec3(30.0f));
 
-		uboChip.amb = 0.025f; uboChip.rho = 0.2f; uboChip.K = 0.3f; uboChip.F0 = 0.3f; uboChip.g = 3.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f; uboChip.baseColor = 0.0f;
+		uboChip.amb = 0.025f; uboChip.rho = 0.2f; uboChip.K = 0.05f; uboChip.F0 = 0.3f; uboChip.g = 3.5f; uboChip.beta = 2.0f; uboChip.emit = 0.0f; uboChip.baseColor = 0.0f;
 		uboChip.sColor = glm::vec3(1.0f);
 
 		uboChip.mvpMat = Prj * View * World;
