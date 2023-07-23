@@ -142,7 +142,7 @@ void main() {
 	
 	outColor =
 		vec4(clamp((Diff + Spec) * lightColor.rgb + Ambient,0.0,1.0), 1.0f) +
-		vec4(clamp(clamp((Diff1 + Spec1) * lightColor.rgb + Ambient,0.0,1.0) + ME, 0.0f, 1.0f), 1.0f) +
+		vec4(clamp(clamp((Diff1 + Spec1) * lightColor1.rgb + Ambient1,0.0,1.0) + ME, 0.0f, 1.0f), 1.0f) +
 		vec4(clamp(clamp((Diff2 + Spec2) * lightColor2.rgb + Ambient2,0.0,1.0) + ME, 0.0f, 1.0f), 1.0f) +
 		vec4(clamp(clamp((Diff3 + Spec3) * lightColor3.rgb + Ambient3,0.0,1.0) + ME, 0.0f, 1.0f), 1.0f);
 	
