@@ -79,17 +79,17 @@ protected:
 
 	// Models, textures and Descriptors
 	Model<VertexMesh> MSkyBox, MPhone, MFront, MScreenMesh, MCamera, MLens, MChip, MFloor, MBallLight, MSpotlight, MScreen;
-	Model<VertexOverlay> MOverCam, MOverJack, MOverUI;
+	Model<VertexOverlay> MOverlay;
 
 	DescriptorSet DSGuboLight, DSFloor, DSSkyBox,
-		DSBallLight, DSBallLight2, DSBallLight3, DSSpotlight,
+		DSBallLight, DSBallLight2, DSBallLight3, DSSpotlight, DSSpotlight2, DSSpotlight3,
 		DSScreen, DSPhone, DSFront, DSScreenMesh, DSCamera, DSLens, DSChip,
 		DSOverCam, DSOverJack, DSOverUI;
 
 	Texture TPhone, TScreenMesh, TFloor, TSkyBox, TBallLight, TScreen, TChip, TOverCam, TOverJack, TOverUI;
 
 
-	MeshUniformBlock uboFloor, uboBallLight, uboBallLight2, uboBallLight3, uboSpotlight;
+	MeshUniformBlock uboFloor, uboBallLight, uboBallLight2, uboBallLight3, uboSpotlight, uboSpotlight2, uboSpotlight3;
 	UniformBufferObjectOBJ uboPhone, uboScreen, uboFront, uboScreenMesh, uboCamera, uboLens, uboChip;
 
 	GlobalUniformBufferObjectLight gubo, guboL1, guboL2, guboL3;
@@ -109,7 +109,7 @@ protected:
 		// window size, titile and initial background
 		windowWidth = 800;
 		windowHeight = 600;
-		windowTitle = "New IPhone mega power plasss";
+		windowTitle = "New iPhone mega power plasss";
 		windowResizable = GLFW_TRUE;
 		initialBackgroundColor = { 0.0f, 0.000f, 0.00f, 1.0f };
 
@@ -221,20 +221,10 @@ protected:
 		createScreen(MScreen.vertices, MScreen.indices, 1800.0f, 831.0f);
 		MScreen.initMesh(this, &VMesh);
 
-		MOverCam.vertices = { {{-1.0f, -1.0f}, {0.0f, 0.0f}}, {{-1.0f, 1.0f}, {0.0f,1.0f}},
+		MOverlay.vertices = { {{-1.0f, -1.0f}, {0.0f, 0.0f}}, {{-1.0f, 1.0f}, {0.0f,1.0f}},
 					 {{ 1.0f,-1.0f}, {1.0f,0.0f}}, {{ 1.0f, 1.0f}, {1.0f,1.0f}} };
-		MOverCam.indices = { 0, 1, 2,    1, 2, 3 };
-		MOverCam.initMesh(this, &VOverlay);
-
-		MOverJack.vertices = { {{-1.0f, -1.0f}, {0.0102f, 0.0f}}, {{-1.0f, 1.0f}, {0.0f,1.0f}},
-						 {{1.0f,-1.0f}, {1.0f,0.0f}}, {{1.0f, 1.0f}, {1.0f,1.0f}} };
-		MOverJack.indices = { 0, 1, 2,    1, 2, 3 };
-		MOverJack.initMesh(this, &VOverlay);
-
-		MOverUI.vertices = { {{-1.0f, -1.0f}, {0.0102f, 0.0f}}, {{-1.0f, 1.0f}, {0.0f,1.0f}},
-				 {{1.0f,-1.0f}, {1.0f,0.0f}}, {{1.0f, 1.0f}, {1.0f,1.0f}} };
-		MOverUI.indices = { 0, 1, 2,    1, 2, 3 };
-		MOverUI.initMesh(this, &VOverlay);
+		MOverlay.indices = { 0, 1, 2,    1, 2, 3 };
+		MOverlay.initMesh(this, &VOverlay);
 
 		// Create the textures
 		// The second parameter is the file name
@@ -327,6 +317,16 @@ protected:
 					{1, TEXTURE, 0, &TFloor}
 			});
 
+		DSSpotlight2.init(this, &DSLMesh, {
+					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
+					{1, TEXTURE, 0, &TFloor}
+			});
+
+		DSSpotlight3.init(this, &DSLMesh, {
+					{0, UNIFORM, sizeof(MeshUniformBlock), nullptr},
+					{1, TEXTURE, 0, &TFloor}
+			});
+
 		DSScreen.init(this, &DSLObj, {
 					{0, UNIFORM, sizeof(UniformBufferObjectOBJ), nullptr},
 					{1, TEXTURE, 0, &TScreen}
@@ -376,6 +376,8 @@ protected:
 		DSBallLight2.cleanup();
 		DSBallLight3.cleanup();
 		DSSpotlight.cleanup();
+		DSSpotlight2.cleanup();
+		DSSpotlight3.cleanup();
 		DSScreen.cleanup();
 		DSOverCam.cleanup();
 		DSOverJack.cleanup();
@@ -413,9 +415,7 @@ protected:
 		MBallLight.cleanup();
 		MSpotlight.cleanup();
 		MScreen.cleanup();
-		MOverCam.cleanup();
-		MOverJack.cleanup();
-		MOverUI.cleanup();
+		MOverlay.cleanup();
 
 		// Cleanup descriptor set layouts
 		DSLMesh.cleanup();
@@ -476,9 +476,16 @@ protected:
 
 		MSpotlight.bind(commandBuffer);
 		DSSpotlight.bind(commandBuffer, PMesh, 1, currentImage);
-		// DON'T DELETE
-		// vkCmdDrawIndexed(commandBuffer,
-		// 	static_cast<uint32_t>(MSpotlight.indices.size()), 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MSpotlight.indices.size()), 1, 0, 0, 0);
+		
+		DSSpotlight2.bind(commandBuffer, PMesh, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MSpotlight.indices.size()), 1, 0, 0, 0);
+		
+		DSSpotlight3.bind(commandBuffer, PMesh, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MSpotlight.indices.size()), 1, 0, 0, 0);
 
 
 		PObj.bind(commandBuffer);
@@ -518,20 +525,18 @@ protected:
 			static_cast<uint32_t>(MScreen.indices.size()), 1, 0, 0, 0);
 
 		POverlay.bind(commandBuffer);
-		MOverCam.bind(commandBuffer);
+		MOverlay.bind(commandBuffer);
 		DSOverCam.bind(commandBuffer, POverlay, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(MOverCam.indices.size()), 1, 0, 0, 0);
+			static_cast<uint32_t>(MOverlay.indices.size()), 1, 0, 0, 0);
 
-		MOverJack.bind(commandBuffer);
 		DSOverJack.bind(commandBuffer, POverlay, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(MOverJack.indices.size()), 1, 0, 0, 0);
+			static_cast<uint32_t>(MOverlay.indices.size()), 1, 0, 0, 0);
 
-		MOverUI.bind(commandBuffer);
 		DSOverUI.bind(commandBuffer, POverlay, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(MOverJack.indices.size()), 1, 0, 0, 0);
+			static_cast<uint32_t>(MOverlay.indices.size()), 1, 0, 0, 0);
 
 	}
 
@@ -919,14 +924,10 @@ protected:
 		skyBubo.nMat = glm::mat4(1.0f);
 		DSSkyBox.map(currentImage, &skyBubo, sizeof(skyBubo), 0);
 
-		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.01f));
-		uboSpotlight.amb = 0.05f; uboSpotlight.gamma = 60.0f; uboSpotlight.sColor = glm::vec3(1.0f);
-		uboSpotlight.mvpMat = Prj * View * World;
-		uboSpotlight.mMat = World;
-		uboSpotlight.nMat = glm::inverse(glm::transpose(World));
-		DSSpotlight.map(currentImage, &uboSpotlight, sizeof(uboSpotlight), 0);
 
-		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.05f));
+		glm::vec3 posL = glm::vec3(lightDist * cos(currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(currLightHorAngle) * cos(currLightVertAngle));
+		
+		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(posL)), glm::vec3(0.05f));
 
 		uboBallLight.amb = 0.0f; uboBallLight.gamma = 180.0f; uboBallLight.sColor = glm::vec3(1.0f);
 		uboBallLight.mvpMat = Prj * View * World;
@@ -934,8 +935,32 @@ protected:
 		uboBallLight.nMat = glm::inverse(glm::transpose(World));
 		DSBallLight.map(currentImage, &uboBallLight, sizeof(uboBallLight), 0);
 
+	
+		glm::vec3 direction = glm::normalize(currTra - posL);
 
-		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(glm::radians(120.0f) + currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(glm::radians(120.0f) + currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.05f));
+		glm::vec3 rotSL = glm::vec3(0.0f);
+		rotSL.x = -asin(direction.y);
+		rotSL.y = atan2(direction.x, direction.z);
+
+		glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), posL);
+		glm::mat4 rotationMatrix =
+			glm::rotate(glm::mat4(1.0f), rotSL.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), rotSL.x + glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+		glm::mat4 scalingMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+
+		World = translationMatrix * rotationMatrix * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.06f, 0.0f)) * scalingMatrix;
+
+
+		uboSpotlight.amb = 0.05f; uboSpotlight.gamma = 60.0f; uboSpotlight.sColor = glm::vec3(1.0f);
+		uboSpotlight.mvpMat = Prj * View * World;
+		uboSpotlight.mMat = World;
+		uboSpotlight.nMat = glm::inverse(glm::transpose(World));
+		DSSpotlight.map(currentImage, &uboSpotlight, sizeof(uboSpotlight), 0);
+
+		posL = glm::vec3(lightDist * cos(glm::radians(120.0f) + currLightHorAngle) * cos(currLightVertAngle), lightDist* sin(currLightVertAngle), lightDist* sin(glm::radians(120.0f) + currLightHorAngle)* cos(currLightVertAngle));
+
+		World = glm::scale(glm::translate(glm::mat4(1.0f), posL), glm::vec3(0.05f));
 
 		uboBallLight2.amb = 0.0f; uboBallLight2.gamma = 180.0f; uboBallLight2.sColor = glm::vec3(1.0f);
 		uboBallLight2.mvpMat = Prj * View * World;
@@ -943,13 +968,51 @@ protected:
 		uboBallLight2.nMat = glm::inverse(glm::transpose(World));
 		DSBallLight2.map(currentImage, &uboBallLight2, sizeof(uboBallLight2), 0);
 
-		World = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(lightDist * cos(glm::radians(240.0f) + currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(glm::radians(240.0f) + currLightHorAngle) * cos(currLightVertAngle))), glm::vec3(0.05f));
+		direction = glm::normalize(currTra - posL);
+
+		rotSL.x = -asin(direction.y);
+		rotSL.y = atan2(direction.x, direction.z);
+
+		translationMatrix = glm::translate(glm::mat4(1.0f), posL);
+		rotationMatrix =
+			glm::rotate(glm::mat4(1.0f), rotSL.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), rotSL.x + glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+		World = translationMatrix * rotationMatrix * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.06f, 0.0f)) * scalingMatrix;
+
+		uboSpotlight2.amb = 0.05f; uboSpotlight2.gamma = 60.0f; uboSpotlight2.sColor = glm::vec3(1.0f);
+		uboSpotlight2.mvpMat = Prj * View * World;
+		uboSpotlight2.mMat = World;
+		uboSpotlight2.nMat = glm::inverse(glm::transpose(World));
+		DSSpotlight2.map(currentImage, &uboSpotlight2, sizeof(uboSpotlight2), 0);
+		
+		posL = glm::vec3(lightDist * cos(glm::radians(240.0f) + currLightHorAngle) * cos(currLightVertAngle), lightDist * sin(currLightVertAngle), lightDist * sin(glm::radians(240.0f) + currLightHorAngle) * cos(currLightVertAngle));
+
+		World = glm::scale(glm::translate(glm::mat4(1.0f), posL), glm::vec3(0.05f));
 
 		uboBallLight3.amb = 0.0f; uboBallLight3.gamma = 180.0f; uboBallLight3.sColor = glm::vec3(1.0f);
 		uboBallLight3.mvpMat = Prj * View * World;
 		uboBallLight3.mMat = World;
 		uboBallLight3.nMat = glm::inverse(glm::transpose(World));
 		DSBallLight3.map(currentImage, &uboBallLight3, sizeof(uboBallLight3), 0);
+
+		direction = glm::normalize(currTra - posL);
+
+		rotSL.x = -asin(direction.y);
+		rotSL.y = atan2(direction.x, direction.z);
+
+		translationMatrix = glm::translate(glm::mat4(1.0f), posL);
+		rotationMatrix =
+			glm::rotate(glm::mat4(1.0f), rotSL.y, glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), rotSL.x + glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+		World = translationMatrix * rotationMatrix * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.06f, 0.0f)) * scalingMatrix;
+
+		uboSpotlight3.amb = 0.05f; uboSpotlight3.gamma = 60.0f; uboSpotlight3.sColor = glm::vec3(1.0f);
+		uboSpotlight3.mvpMat = Prj * View * World;
+		uboSpotlight3.mMat = World;
+		uboSpotlight3.nMat = glm::inverse(glm::transpose(World));
+		DSSpotlight3.map(currentImage, &uboSpotlight3, sizeof(uboSpotlight3), 0);
 	}
 
 	void createFloor(std::vector<VertexMesh>& vDef, std::vector<uint32_t>& vIdx);
